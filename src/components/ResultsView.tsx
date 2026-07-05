@@ -404,6 +404,33 @@ export function ResultsView({ result, onReset, companyName, ticker }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Knowledge Gaps */}
+      {result.knowledgeGaps && result.knowledgeGaps.length > 0 && (
+        <div className="mt-8 border-t border-border pt-8">
+          <div className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            Follow-up Questions & Knowledge Gaps
+          </div>
+          <div className="flex flex-col gap-3">
+            {result.knowledgeGaps.map((gap, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm transition hover:border-primary/50"
+              >
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                  {i + 1}
+                </div>
+                <span>{gap}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
