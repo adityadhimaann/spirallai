@@ -1,4 +1,5 @@
 import { NODE_STEPS, type NodeKey } from "@/lib/research-types";
+import { useState, useEffect } from "react";
 
 export type StepStatus = "pending" | "active" | "done" | "error";
 
@@ -10,6 +11,34 @@ export interface StepState {
 
 interface Props {
   steps: Record<NodeKey, StepState>;
+}
+
+const SUB_STATUSES: Record<NodeKey, string[]> = {
+  financials: ["Fetching latest 10-K...", "Parsing balance sheet...", "Extracting revenue metrics...", "Verifying historical data..."],
+  news: ["Searching global news...", "Analyzing sentiment...", "Filtering duplicate articles...", "Cross-checking dates..."],
+  competitive: ["Identifying key competitors...", "Analyzing market share...", "Extracting peer multiples...", "Synthesizing landscape..."],
+  bull: ["Drafting optimistic thesis...", "Highlighting growth catalysts...", "Formatting bull case...", "Finalizing bull perspective..."],
+  bear: ["Drafting skeptical thesis...", "Highlighting key risks...", "Formatting bear case...", "Finalizing bear perspective..."],
+  judge: ["Weighing bull vs bear...", "Scoring confidence...", "Synthesizing final verdict...", "Generating executive summary..."]
+};
+
+function ActiveSubStatus({ stepKey }: { stepKey: NodeKey }) {
+  const [index, setIndex] = useState(0);
+  const statuses = SUB_STATUSES[stepKey] || ["Processing..."];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % statuses.length);
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [statuses.length]);
+
+  return (
+    <div className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground animate-in fade-in slide-in-from-top-1">
+      <div className="h-1 w-1 rounded-full bg-primary/60 animate-pulse" />
+      <span>{statuses[index]}</span>
+    </div>
+  );
 }
 
 function Icon({ status }: { status: StepStatus }) {
@@ -76,6 +105,7 @@ export function Stepper({ steps }: Props) {
             >
               {step.label}
             </div>
+            {s.status === "active" && <ActiveSubStatus stepKey={step.key as NodeKey} />}
 
             {/* Dynamic Loading References */}
             {uniqueDomains.length > 0 && (

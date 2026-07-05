@@ -5,6 +5,7 @@ export interface ResearchResult {
   confidence: number; // 0-100
   reasoning: string;
   keyRisks: string[];
+  knowledgeGaps?: string[];
   bullCase: string;
   bearCase: string;
   financials?: unknown;

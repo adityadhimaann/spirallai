@@ -8,6 +8,7 @@ interface Props {
   companyName: string;
   ticker: string;
   onReset: () => void;
+  onComplete?: () => void;
 }
 
 const emptySteps = (): Record<NodeKey, StepState> =>
@@ -27,7 +28,7 @@ function normalizeNodeKey(node: string): NodeKey | null {
   return null;
 }
 
-export function ResearchView({ backendUrl, companyName, ticker, onReset }: Props) {
+export function ResearchView({ backendUrl, companyName, ticker, onReset, onComplete }: Props) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [partialData, setPartialData] = useState<any>({});
   const [result, setResult] = useState<ResearchResult | null>(() => {
@@ -94,6 +95,7 @@ export function ResearchView({ backendUrl, companyName, ticker, onReset }: Props
             confidence: v.confidence,
             reasoning: v.reasoning,
             keyRisks: v.keyRisks,
+            knowledgeGaps: v.knowledgeGaps,
             bullCase: data.bullCase,
             bearCase: data.bearCase,
             financials: data.financials,
@@ -103,9 +105,11 @@ export function ResearchView({ backendUrl, companyName, ticker, onReset }: Props
           
           setResult(finalResult);
           localStorage.setItem("research_result", JSON.stringify(finalResult));
+          onComplete?.();
         }
       } catch (e) {
         setError(`Failed to parse final result: ${(e as Error).message}`);
+        onComplete?.();
       } finally {
         es.close();
       }
@@ -147,32 +151,13 @@ export function ResearchView({ backendUrl, companyName, ticker, onReset }: Props
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-10">
-      <div className="mb-8 flex items-start justify-between">
-        <div>
-          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Researching
-          </div>
-          <h1 className="mt-1 text-2xl font-semibold text-foreground">
-            {companyName}
-            {ticker && <span className="ml-2 font-mono text-base text-muted-foreground">{ticker}</span>}
-          </h1>
-        </div>
-        <button
-          onClick={onReset}
-          className="rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:text-foreground"
-        >
-          Cancel
-        </button>
-      </div>
-
+    <div className="w-full">
       {error && (
-        <div className="mb-6 rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
+        <div className="mb-4 rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
           {error}
         </div>
       )}
-
-      <div className="rounded-xl border border-border bg-card p-8 shadow-lg shadow-black/20">
+      <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
         <Stepper steps={steps} />
       </div>
     </div>

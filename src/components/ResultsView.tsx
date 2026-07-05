@@ -1,7 +1,5 @@
 import { useState } from "react";
 import type { ResearchResult, Verdict } from "@/lib/research-types";
-import { FollowUpChat } from "./FollowUpChat";
-
 const VERDICT_STYLES: Record<Verdict, { bg: string; text: string; label: string }> = {
   INVEST: { bg: "bg-success", text: "text-success-foreground", label: "INVEST" },
   PASS:   { bg: "bg-danger",  text: "text-danger-foreground",  label: "PASS" },
@@ -201,6 +199,14 @@ interface SourceItem {
   snippet: string;
 }
 
+function getDomainBadge(domain: string): { label: string; bg: string; text: string } | null {
+  if (domain.includes("sec.gov") || domain.includes("investor.") || domain.includes("apple.com") || domain.includes("tesla.com")) return { label: "OFFICIAL", bg: "bg-success/20", text: "text-success" };
+  if (domain.endsWith(".gov")) return { label: "GOV", bg: "bg-blue-500/20", text: "text-blue-500" };
+  if (domain.endsWith(".edu")) return { label: "ACADEMIC", bg: "bg-purple-500/20", text: "text-purple-500" };
+  if (domain.includes("bloomberg") || domain.includes("cnbc") || domain.includes("wsj") || domain.includes("reuters") || domain.includes("ft.com") || domain.includes("stocktitan")) return { label: "NEWS", bg: "bg-orange-500/20", text: "text-orange-500" };
+  return null;
+}
+
 function SourceCard({ source }: { source: SourceItem }) {
   let domain = "";
   try {
@@ -212,6 +218,8 @@ function SourceCard({ source }: { source: SourceItem }) {
   // Fallback for mock URLs without protocol
   const isMock = !source.url.startsWith("http");
   if (isMock) domain = "mock-source.com";
+
+  const badge = getDomainBadge(domain);
 
   return (
     <a 
@@ -229,7 +237,14 @@ function SourceCard({ source }: { source: SourceItem }) {
            />
         </div>
         <div className="flex-1 overflow-hidden">
-          <div className="truncate text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{domain}</div>
+          <div className="flex items-center gap-2">
+            <div className="truncate text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{domain}</div>
+            {badge && (
+              <span className={`rounded-sm px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${badge.bg} ${badge.text}`}>
+                {badge.label}
+              </span>
+            )}
+          </div>
           <div className="mt-1 line-clamp-2 text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-primary">
             {source.title}
           </div>
@@ -289,8 +304,8 @@ export function ResultsView({ result, onReset, companyName, ticker }: Props) {
 
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="w-full">
+      <div className="mb-8 flex items-center justify-between">
         <div>
           <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
             Verdict
@@ -389,8 +404,6 @@ export function ResultsView({ result, onReset, companyName, ticker }: Props) {
           </div>
         </div>
       </div>
-
-      <FollowUpChat context={result} />
     </div>
   );
 }
