@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { SearchView } from "@/components/SearchView";
 import { ResearchView } from "@/components/ResearchView";
 
@@ -24,20 +24,28 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const BACKEND_KEY = "ira.backendUrl";
-
 function Index() {
-  const [backendUrl, setBackendUrl] = useState("");
-  const [query, setQuery] = useState<{ company: string; ticker: string } | null>(null);
+  const backendUrl = "http://localhost:8081";
+  const [query, setQuery] = useState<{ company: string; ticker: string } | null>(() => {
+    try {
+      const saved = localStorage.getItem("research_query");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
-  useEffect(() => {
-    const stored = typeof window !== "undefined" ? window.localStorage.getItem(BACKEND_KEY) : null;
-    if (stored) setBackendUrl(stored);
-  }, []);
+  const handleSetQuery = (company: string, ticker: string) => {
+    const newQuery = { company, ticker };
+    setQuery(newQuery);
+    localStorage.setItem("research_query", JSON.stringify(newQuery));
+    localStorage.removeItem("research_result");
+  };
 
-  const handleBackendChange = (url: string) => {
-    setBackendUrl(url);
-    if (typeof window !== "undefined") window.localStorage.setItem(BACKEND_KEY, url);
+  const handleReset = () => {
+    setQuery(null);
+    localStorage.removeItem("research_query");
+    localStorage.removeItem("research_result");
   };
 
   return (
@@ -62,13 +70,11 @@ function Index() {
             backendUrl={backendUrl}
             companyName={query.company}
             ticker={query.ticker}
-            onReset={() => setQuery(null)}
+            onReset={handleReset}
           />
         ) : (
           <SearchView
-            backendUrl={backendUrl}
-            onBackendUrlChange={handleBackendChange}
-            onSubmit={(company, ticker) => setQuery({ company, ticker })}
+            onSubmit={handleSetQuery}
           />
         )}
       </main>

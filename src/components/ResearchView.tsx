@@ -28,13 +28,25 @@ function normalizeNodeKey(node: string): NodeKey | null {
 }
 
 export function ResearchView({ backendUrl, companyName, ticker, onReset }: Props) {
-  const [steps, setSteps] = useState<Record<NodeKey, StepState>>(emptySteps);
-  const [result, setResult] = useState<ResearchResult | null>(null);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [partialData, setPartialData] = useState<any>({});
+  const [result, setResult] = useState<ResearchResult | null>(() => {
+    try {
+      const saved = localStorage.getItem("research_result");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [error, setError] = useState<string | null>(null);
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    setSteps(emptySteps());
+    // If we loaded a completed result from localStorage, don't re-fetch
+    if (result) return;
+
+    setCurrentStepIndex(0);
+    setPartialData({});
     setResult(null);
     setError(null);
 
@@ -59,41 +71,38 @@ export function ResearchView({ backendUrl, companyName, ticker, onReset }: Props
     const handleNodeUpdate = (evt: MessageEvent) => {
       try {
         const data = JSON.parse(evt.data);
-        const key = normalizeNodeKey(String(data.node ?? ""));
-        if (!key) return;
-        setSteps((prev) => {
-          const next = { ...prev };
-          const trace = data.trace;
-          const traces =
-            trace == null
-              ? next[key].traces
-              : [...next[key].traces, typeof trace === "string" ? trace : JSON.stringify(trace)];
-          next[key] = { ...next[key], status: "active", traces };
-          // mark previous steps done
-          const idx = NODE_STEPS.findIndex((s) => s.key === key);
-          for (let i = 0; i < idx; i++) {
-            const k = NODE_STEPS[i].key;
-            if (next[k].status !== "done") next[k] = { ...next[k], status: "done" };
-          }
-          return next;
-        });
+        if (data.partialData) {
+          setPartialData((prev: any) => ({ ...prev, ...data.partialData }));
+        }
       } catch (e) {
-        console.error("node_update parse error", e);
+        // ignore parse error for intermediate updates
       }
+      setCurrentStepIndex((prev) => Math.min(prev + 1, NODE_STEPS.length - 1));
     };
 
     const handleDone = (evt: MessageEvent) => {
       try {
         const data = JSON.parse(evt.data);
-        setSteps((prev) => {
-          const next = { ...prev };
-          for (const s of NODE_STEPS) next[s.key] = { ...next[s.key], status: "done" };
-          return next;
-        });
-        if (!data || typeof data.verdict !== "string") {
+        setCurrentStepIndex(NODE_STEPS.length); // all done
+        
+        const v = data?.verdict;
+        if (!v || typeof v.verdict !== "string") {
           setError("Backend returned malformed result JSON.");
         } else {
-          setResult(data as ResearchResult);
+          const finalResult = {
+            verdict: v.verdict,
+            confidence: v.confidence,
+            reasoning: v.reasoning,
+            keyRisks: v.keyRisks,
+            bullCase: data.bullCase,
+            bearCase: data.bearCase,
+            financials: data.financials,
+            news: data.news,
+            competitive: data.competitive,
+          } as ResearchResult;
+          
+          setResult(finalResult);
+          localStorage.setItem("research_result", JSON.stringify(finalResult));
         }
       } catch (e) {
         setError(`Failed to parse final result: ${(e as Error).message}`);
@@ -107,13 +116,6 @@ export function ResearchView({ backendUrl, companyName, ticker, onReset }: Props
     es.onerror = () => {
       if (es.readyState === EventSource.CLOSED) return;
       setError("Connection to backend lost. Is it running?");
-      setSteps((prev) => {
-        const next = { ...prev };
-        for (const s of NODE_STEPS) {
-          if (next[s.key].status === "active") next[s.key] = { ...next[s.key], status: "error" };
-        }
-        return next;
-      });
       es.close();
     };
 
@@ -121,7 +123,24 @@ export function ResearchView({ backendUrl, companyName, ticker, onReset }: Props
       es.close();
       esRef.current = null;
     };
-  }, [backendUrl, companyName, ticker]);
+  }, [backendUrl, companyName, ticker]); // We intentionally omit `result` so it doesn't re-trigger loops, but it's checked initially
+
+  const steps = NODE_STEPS.reduce((acc, s, i) => {
+    let status: "done" | "active" | "pending" | "error" = "pending";
+    if (error) {
+      status = i === currentStepIndex ? "error" : i < currentStepIndex ? "done" : "pending";
+    } else {
+      status = i < currentStepIndex ? "done" : i === currentStepIndex ? "active" : "pending";
+    }
+    // inject partialData for the specific node
+    const dataForStep = s.key === "news" ? partialData.news 
+                      : s.key === "competitive" ? partialData.competitive 
+                      : s.key === "financials" ? partialData.financials 
+                      : null;
+    
+    acc[s.key] = { status, traces: [], data: dataForStep };
+    return acc;
+  }, {} as Record<NodeKey, StepState>);
 
   if (result) {
     return <ResultsView result={result} onReset={onReset} companyName={companyName} ticker={ticker} />;

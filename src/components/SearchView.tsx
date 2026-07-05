@@ -2,11 +2,9 @@ import { useState } from "react";
 
 interface Props {
   onSubmit: (companyName: string, ticker: string) => void;
-  backendUrl: string;
-  onBackendUrlChange: (url: string) => void;
 }
 
-export function SearchView({ onSubmit, backendUrl, onBackendUrlChange }: Props) {
+export function SearchView({ onSubmit }: Props) {
   const [company, setCompany] = useState("");
   const [ticker, setTicker] = useState("");
 
@@ -53,21 +51,6 @@ export function SearchView({ onSubmit, backendUrl, onBackendUrlChange }: Props) 
         </div>
       </form>
 
-      <div className="mt-10 w-full">
-        <label className="block text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Backend URL
-        </label>
-        <input
-          value={backendUrl}
-          onChange={(e) => onBackendUrlChange(e.target.value)}
-          placeholder="https://your-backend.example.com"
-          className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 font-mono text-xs text-muted-foreground focus:border-primary focus:outline-none"
-        />
-        <p className="mt-2 text-xs text-muted-foreground">
-          Streams from <code className="font-mono">GET {"{backend}"}/api/research/stream</code>
-          . Stored locally.
-        </p>
-      </div>
     </div>
   );
 }

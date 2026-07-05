@@ -5,6 +5,7 @@ export type StepStatus = "pending" | "active" | "done" | "error";
 export interface StepState {
   status: StepStatus;
   traces: string[];
+  data?: any;
 }
 
 interface Props {
@@ -41,6 +42,21 @@ export function Stepper({ steps }: Props) {
       {NODE_STEPS.map((step, i) => {
         const s = steps[step.key];
         const isLast = i === NODE_STEPS.length - 1;
+
+        // Extract domains for live loading feedback
+        const domains = [];
+        if (s.data?.articles) {
+          domains.push(...s.data.articles.map((a: any) => {
+            try { return new URL(a.url).hostname.replace(/^www\./, ""); } catch { return ""; }
+          }).filter(Boolean));
+        }
+        if (s.data?.findings) {
+          domains.push(...s.data.findings.map((a: any) => {
+            try { return new URL(a.url).hostname.replace(/^www\./, ""); } catch { return ""; }
+          }).filter(Boolean));
+        }
+        const uniqueDomains = Array.from(new Set(domains)).slice(0, 3); // show up to 3 domains
+
         return (
           <li key={step.key} className="relative pl-10">
             {!isLast && (
@@ -60,14 +76,26 @@ export function Stepper({ steps }: Props) {
             >
               {step.label}
             </div>
-            {s.traces.length > 0 && (
-              <ul className="mt-2 space-y-1 border-l border-border/60 pl-3">
-                {s.traces.slice(-6).map((t, idx) => (
-                  <li key={idx} className="font-mono text-[11px] leading-relaxed text-muted-foreground">
-                    {t}
-                  </li>
+
+            {/* Dynamic Loading References */}
+            {uniqueDomains.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-1">
+                {uniqueDomains.map((domain, idx) => (
+                  <div key={idx} className="flex items-center gap-1.5 rounded-full border border-border bg-secondary/30 px-2 py-1 shadow-sm">
+                    <img 
+                      src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=16`} 
+                      className="h-3 w-3 rounded-sm"
+                      alt=""
+                    />
+                    <span className="text-[10px] font-medium text-muted-foreground">taking ref: {domain}</span>
+                  </div>
                 ))}
-              </ul>
+                {domains.length > 3 && (
+                  <div className="flex items-center rounded-full border border-border bg-secondary/30 px-2 py-1">
+                    <span className="text-[10px] font-medium text-muted-foreground">+{domains.length - 3} more</span>
+                  </div>
+                )}
+              </div>
             )}
           </li>
         );

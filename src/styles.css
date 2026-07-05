@@ -73,3 +73,11 @@
   html, body { background-color: var(--color-background); color: var(--color-foreground); }
   body { font-feature-settings: "cv02","cv03","cv04","cv11"; }
 }
+
+
+/* Hide Lovable Badge */
+[id^="lovable-"], 
+[class*="lovable-badge"],
+div[style*="z-index: 2147483647"] {
+  display: none !important;
+}
