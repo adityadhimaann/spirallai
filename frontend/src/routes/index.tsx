@@ -546,63 +546,79 @@ function Index() {
                     ) : (
                       // Render standard chat bubble
                       <div
-                        className={`max-w-[85%] rounded-2xl px-5 py-3.5 text-[15px] leading-relaxed shadow-sm ${
+                        className={`max-w-[85%] rounded-3xl px-6 py-5 text-[15px] leading-relaxed shadow-[0_8px_32px_rgb(0,0,0,0.08)] relative overflow-hidden ${
                           msg.role === "user"
-                            ? "bg-secondary text-secondary-foreground rounded-tr-sm"
-                            : "bg-card border border-border text-foreground rounded-tl-sm"
+                            ? "bg-primary text-primary-foreground rounded-tr-sm"
+                            : "bg-card/60 backdrop-blur-2xl border border-white/10 ring-1 ring-white/5 text-foreground rounded-tl-sm"
                         }`}
                       >
-                        {msg.role === "assistant" ? (
-                          <div className="flex flex-col">
-                            <div className="flex flex-col gap-2 w-full text-[15px] leading-relaxed">
-                              <ReactMarkdown
-                                components={{
-                                  p: ({ node, ...props }) => <p className="mb-4 text-foreground/90 last:mb-0" {...props} />,
-                                  ul: ({ node, ...props }) => <ul className="flex flex-col gap-3 my-4 list-none p-0" {...props} />,
-                                  ol: ({ node, ...props }) => <ol className="flex flex-col gap-3 my-4 list-none p-0" {...props} />,
-                                  li: ({ node, ...props }) => (
-                                    <li className="group relative flex items-start gap-4 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card hover:shadow-md">
-                                      <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
-                                        <Check className="h-3 w-3" />
-                                      </div>
-                                      <div className="flex-1 text-foreground">
-                                        {props.children}
-                                      </div>
-                                    </li>
-                                  ),
-                                  a: ({ node, ...props }) => (
-                                    <button
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        if (props.href) window.open(props.href, "_blank", "noopener,noreferrer");
-                                      }}
-                                      className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline bg-primary/10 px-2 py-0.5 rounded ml-1 my-0.5 cursor-pointer text-[13px] border border-primary/20"
-                                      title={props.href}
-                                    >
-                                      <span className="truncate max-w-[200px]">{props.children}</span>
-                                    </button>
-                                  ),
-                                  h1: ({ node, ...props }) => <h1 className="text-xl font-bold text-foreground mt-8 mb-4" {...props} />,
-                                  h2: ({ node, ...props }) => <h2 className="text-lg font-bold text-foreground mt-8 mb-4 border-b border-border/50 pb-2" {...props} />,
-                                  h3: ({ node, ...props }) => <h3 className="text-sm font-bold uppercase tracking-wider text-primary mt-6 mb-3" {...props} />,
-                                  table: ({ node, ...props }) => (
-                                    <div className="overflow-x-auto my-6 rounded-xl border border-border bg-card">
-                                      <table className="w-full text-sm text-left" {...props} />
-                                    </div>
-                                  ),
-                                  th: ({ node, ...props }) => <th className="bg-muted/50 px-4 py-3 font-semibold text-muted-foreground border-b border-border" {...props} />,
-                                  td: ({ node, ...props }) => <td className="px-4 py-3 border-b border-border/50 last:border-0" {...props} />,
-                                  strong: ({ node, ...props }) => <strong className="font-semibold text-foreground" {...props} />,
-                                }}
-                              >
-                                {msg.content}
-                              </ReactMarkdown>
-                            </div>
-                            <ChatActions content={msg.content} />
-                          </div>
-                        ) : (
-                          msg.content
+                        {msg.role === "assistant" && (
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50 pointer-events-none" />
                         )}
+                        <div className="relative z-10">
+                          {msg.role === "assistant" ? (
+                            <div className="flex flex-col">
+                              <div className="flex flex-col gap-2 w-full text-[15px] leading-relaxed">
+                                <ReactMarkdown
+                                  components={{
+                                    p: ({ node, ...props }) => <p className="mb-4 text-foreground/90 leading-relaxed last:mb-0" {...props} />,
+                                    ul: ({ node, ...props }) => <ul className="flex flex-col gap-3 my-5 list-none p-0" {...props} />,
+                                    ol: ({ node, ...props }) => <ol className="flex flex-col gap-3 my-5 list-decimal pl-5 marker:text-primary marker:font-semibold" {...props} />,
+                                    li: ({ node, ...props }) => (
+                                      <li className="group relative flex items-start gap-4 rounded-2xl border border-white/5 bg-background/40 backdrop-blur-md p-4 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:border-primary/40 hover:bg-card/80 hover:shadow-[0_8px_30px_rgba(var(--primary),0.15)]">
+                                        <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary transition-colors group-hover:bg-primary/25 group-hover:shadow-[0_0_10px_rgba(var(--primary),0.3)]">
+                                          <Check className="h-3.5 w-3.5" />
+                                        </div>
+                                        <div className="flex-1 text-foreground/90 group-hover:text-foreground transition-colors">
+                                          {props.children}
+                                        </div>
+                                      </li>
+                                    ),
+                                    a: ({ node, ...props }) => (
+                                      <button
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          if (props.href) window.open(props.href, "_blank", "noopener,noreferrer");
+                                        }}
+                                        className="group inline-flex items-center gap-1.5 font-medium text-primary hover:text-primary-foreground hover:bg-primary px-2.5 py-1 rounded-full mx-1 my-0.5 cursor-pointer text-[13px] border border-primary/20 bg-primary/5 transition-all duration-300 hover:shadow-[0_0_15px_rgba(var(--primary),0.4)]"
+                                        title={props.href}
+                                      >
+                                        <span className="truncate max-w-[200px]">{props.children}</span>
+                                        <ExternalLink className="h-3 w-3 opacity-50 group-hover:opacity-100" />
+                                      </button>
+                                    ),
+                                    h1: ({ node, ...props }) => <h1 className="text-2xl font-bold bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text text-transparent mt-8 mb-5" {...props} />,
+                                    h2: ({ node, ...props }) => <h2 className="text-xl font-bold bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text text-transparent mt-8 mb-4 border-b border-white/10 pb-3" {...props} />,
+                                    h3: ({ node, ...props }) => (
+                                      <div className="mt-8 mb-4 flex items-center gap-2">
+                                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+                                          <TrendingUp className="h-3.5 w-3.5" />
+                                        </div>
+                                        <h3 className="text-sm font-bold uppercase tracking-[0.15em] text-primary" {...props} />
+                                      </div>
+                                    ),
+                                    blockquote: ({ node, ...props }) => (
+                                      <blockquote className="border-l-4 border-primary/40 bg-primary/5 p-4 rounded-r-xl my-4 text-foreground/80 italic" {...props} />
+                                    ),
+                                    table: ({ node, ...props }) => (
+                                      <div className="overflow-x-auto my-6 rounded-2xl border border-white/10 bg-card/30 backdrop-blur-md shadow-sm">
+                                        <table className="w-full text-sm text-left" {...props} />
+                                      </div>
+                                    ),
+                                    th: ({ node, ...props }) => <th className="bg-muted/30 px-5 py-4 font-semibold text-muted-foreground border-b border-white/10 uppercase tracking-wider text-[11px]" {...props} />,
+                                    td: ({ node, ...props }) => <td className="px-5 py-4 border-b border-white/5 last:border-0" {...props} />,
+                                    strong: ({ node, ...props }) => <strong className="font-semibold text-foreground" {...props} />,
+                                  }}
+                                >
+                                  {msg.content}
+                                </ReactMarkdown>
+                              </div>
+                              <ChatActions content={msg.content} />
+                            </div>
+                          ) : (
+                            msg.content
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
