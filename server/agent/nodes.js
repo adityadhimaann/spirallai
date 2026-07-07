@@ -247,9 +247,19 @@ Respond ONLY as strict JSON, no markdown fences, matching this shape exactly:
   const res = await model.invoke(prompt);
   let parsed;
   try {
-    const cleaned = res.content.replace(/```json|```/g, "").trim();
+    let cleaned = res.content.trim();
+    const match = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    if (match) {
+      cleaned = match[1].trim();
+    } else {
+      const start = cleaned.indexOf('{');
+      const end = cleaned.lastIndexOf('}');
+      if (start !== -1 && end !== -1) {
+        cleaned = cleaned.substring(start, end + 1);
+      }
+    }
     parsed = JSON.parse(cleaned);
-  } catch {
+  } catch (err) {
     parsed = {
       verdict: "WATCH",
       confidence: 50,
