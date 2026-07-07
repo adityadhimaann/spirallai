@@ -1,0 +1,22 @@
+{
+  "name": "investment-research-agent-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AI Investment Research Agent — LangGraph.js multi-agent backend",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "@langchain/core": "^1.2.1",
+    "@langchain/google-genai": "^2.2.0",
+    "@langchain/langgraph": "^1.4.7",
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^9.7.3",
+    "zod": "^4.4.3"
+  }
+}
