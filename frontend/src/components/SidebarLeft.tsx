@@ -10,20 +10,20 @@ interface Props {
 }
 
 export function SidebarLeft({ sessions, activeSessionId, onSelectSession, onNewChat }: Props) {
-  const [isLightMode, setIsLightMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const toggleTheme = () => {
     const root = document.documentElement;
-    if (isLightMode) {
-      root.classList.remove("light");
+    if (isDarkMode) {
+      root.classList.remove("dark");
     } else {
-      root.classList.add("light");
+      root.classList.add("dark");
     }
-    setIsLightMode(!isLightMode);
+    setIsDarkMode(!isDarkMode);
   };
 
   return (
-    <aside className="absolute left-0 top-0 bottom-0 z-50 flex h-full shrink-0 flex-col border-r border-border/60 bg-background/95 backdrop-blur-xl transition-all duration-300 ease-in-out w-[68px] hover:w-64 group shadow-[4px_0_24px_rgba(0,0,0,0.1)]">
+    <aside className="z-50 flex h-full shrink-0 flex-col border-r border-border/60 bg-background/95 backdrop-blur-xl transition-all duration-300 ease-in-out w-[68px] hover:w-64 group shadow-[4px_0_24px_rgba(0,0,0,0.1)]">
       {/* Header section */}
       <div className="flex h-16 items-center pl-[22px] pr-4 border-b border-border/60 overflow-hidden shrink-0">
         <div className="flex items-center gap-3 w-[200px]">
@@ -117,14 +117,14 @@ export function SidebarLeft({ sessions, activeSessionId, onSelectSession, onNewC
           className="group/btn relative flex h-11 w-full items-center gap-3 overflow-hidden rounded-lg px-3 transition-colors text-muted-foreground hover:bg-secondary/50 hover:text-foreground cursor-pointer"
         >
           <div className="absolute left-[16px] flex items-center justify-center">
-            {isLightMode ? (
-              <Moon className="h-5 w-5 shrink-0" />
-            ) : (
+            {isDarkMode ? (
               <Sun className="h-5 w-5 shrink-0" />
+            ) : (
+              <Moon className="h-5 w-5 shrink-0" />
             )}
           </div>
           <span className="ml-8 text-sm font-medium opacity-0 transition-opacity duration-300 group-hover:opacity-100 whitespace-nowrap">
-            {isLightMode ? "Dark Mode" : "Light Mode"}
+            {isDarkMode ? "Light Mode" : "Dark Mode"}
           </span>
         </button>
       </div>

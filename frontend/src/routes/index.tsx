@@ -424,7 +424,7 @@ function Index() {
         onNewChat={handleReset}
       />
 
-      <div className="flex-1 flex flex-col min-w-0 relative z-10 pl-[68px]">
+      <div className="flex-1 flex flex-col min-w-0 relative z-10">
         <header className="sticky top-0 z-10 shrink-0 border-b border-border/60 bg-background/80 backdrop-blur md:hidden">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
             <div className="flex items-center gap-2.5">
