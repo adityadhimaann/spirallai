@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageSquare, Plus, Search, Menu, History, Sun, Moon } from "lucide-react";
 import type { ChatSession } from "@/lib/research-types";
 
