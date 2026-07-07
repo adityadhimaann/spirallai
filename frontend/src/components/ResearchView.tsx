@@ -50,7 +50,7 @@ export function ResearchView({
   useEffect(() => {
     const fetchCached = async () => {
       try {
-        const cachedResponse = await fetch(`http://localhost:8081/api/results/${companyName}`);
+        const cachedResponse = await fetch(`http://localhost:8081/api/results/${encodeURIComponent(companyName)}`);
         if (cachedResponse.ok) {
           const cached = await cachedResponse.json();
           if (cached && cached.verdict) {

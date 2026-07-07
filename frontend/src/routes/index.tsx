@@ -184,7 +184,7 @@ function Index() {
         setResearchQuery({ company: s.company, ticker: s.ticker || "", isDeepMode: s.isDeepMode });
 
         const fetchCached = async () => {
-          const cachedResponse = await fetch(`http://localhost:8081/api/results/${s.company}`);
+          const cachedResponse = await fetch(`http://localhost:8081/api/results/${encodeURIComponent(s.company)}`);
           if (cachedResponse.ok) {
             const cached = await cachedResponse.json();
             if (cached && cached.verdict) {
@@ -275,7 +275,7 @@ function Index() {
       let context = {};
       try {
         const cachedResponse = await fetch(
-          `http://localhost:8081/api/results/${researchQuery?.company || prompt}`,
+          `http://localhost:8081/api/results/${encodeURIComponent(researchQuery?.company || prompt)}`,
         );
         if (cachedResponse.ok) {
           const cached = await cachedResponse.json();
@@ -340,7 +340,7 @@ function Index() {
         const s = sessions.find((x) => x.id === activeSessionId);
         if (s?.company) {
           try {
-            const cachedResponse = await fetch(`http://localhost:8081/api/results/${s.company}`);
+            const cachedResponse = await fetch(`http://localhost:8081/api/results/${encodeURIComponent(s.company)}`);
             if (cachedResponse.ok) {
               const cached = await cachedResponse.json();
               if (cached && cached.verdict) {
