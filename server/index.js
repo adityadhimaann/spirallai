@@ -108,14 +108,14 @@ app.post("/api/sessions", async (req, res) => {
         await ChatSession.findOneAndUpdate(
           { id: session.id },
           session,
-          { upsert: true, new: true }
+          { upsert: true, returnDocument: 'after' }
         );
       }
     } else {
       await ChatSession.findOneAndUpdate(
         { id: sessions.id },
         sessions,
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: 'after' }
       );
     }
     res.json({ ok: true });
@@ -144,7 +144,7 @@ app.post("/api/results", async (req, res) => {
     const result = await ResearchResult.findOneAndUpdate(
       { company: company.toLowerCase() },
       { company: company.toLowerCase(), ...data },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
     res.json(result);
   } catch (err) {
