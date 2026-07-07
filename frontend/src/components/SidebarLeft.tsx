@@ -10,16 +10,29 @@ interface Props {
 }
 
 export function SidebarLeft({ sessions, activeSessionId, onSelectSession, onNewChat }: Props) {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      return (
+        document.documentElement.classList.contains("dark") ||
+        localStorage.getItem("theme") === "dark"
+      );
+    }
+    return false;
+  });
 
-  const toggleTheme = () => {
+  useEffect(() => {
     const root = document.documentElement;
     if (isDarkMode) {
-      root.classList.remove("dark");
-    } else {
       root.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      root.classList.remove("dark");
+      localStorage.setItem("theme", "light");
     }
-    setIsDarkMode(!isDarkMode);
+  }, [isDarkMode]);
+
+  const toggleTheme = () => {
+    setIsDarkMode((prev) => !prev);
   };
 
   return (
