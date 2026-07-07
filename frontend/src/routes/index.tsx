@@ -13,6 +13,7 @@ import {
   Menu,
   PanelLeftClose,
   PanelRightClose,
+  ExternalLink,
 } from "lucide-react";
 import { SidebarLeft } from "@/components/SidebarLeft";
 import { SidebarRight } from "@/components/SidebarRight";
