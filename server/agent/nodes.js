@@ -259,6 +259,9 @@ Respond ONLY as strict JSON, no markdown fences, matching this shape exactly:
       }
     }
     parsed = JSON.parse(cleaned);
+    if (Array.isArray(parsed.reasoning)) {
+      parsed.reasoning = parsed.reasoning.join("\n");
+    }
   } catch (err) {
     parsed = {
       verdict: "WATCH",
