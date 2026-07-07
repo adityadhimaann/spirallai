@@ -690,7 +690,9 @@ interface Props {
 }
 
 export function ResultsView({ result, onReset, companyName, ticker, onFollowUpClick }: Props) {
-  const [activeUrl, setActiveUrl] = useState<string | null>(null);
+  const setActiveUrl = (url: string | null) => {
+    if (url) window.open(url, "_blank", "noopener,noreferrer");
+  };
   const v = VERDICT_STYLES[result.verdict] ?? VERDICT_STYLES.WATCH;
 
   return (
@@ -859,56 +861,6 @@ export function ResultsView({ result, onReset, companyName, ticker, onFollowUpCl
         </div>
       )}
 
-      {/* In-App Source Viewer Modal */}
-      {activeUrl && <IframeModal url={activeUrl} onClose={() => setActiveUrl(null)} />}
-    </div>
-  );
-}
-
-function IframeModal({ url, onClose }: { url: string; onClose: () => void }) {
-  if (!url) return null;
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="flex h-[85vh] w-[90vw] max-w-6xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl animate-in zoom-in-95 duration-200">
-        <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/60 bg-muted/30 px-4">
-          <div className="flex items-center gap-2 overflow-hidden">
-            <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <span className="truncate text-sm font-medium text-foreground">{url}</span>
-          </div>
-          <div className="flex items-center gap-3 shrink-0 ml-4">
-            <a
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-medium text-primary hover:underline flex items-center gap-1"
-            >
-              Open Original <ExternalLink className="h-3 w-3" />
-            </a>
-            <div className="h-4 w-px bg-border/60" />
-            <button
-              onClick={onClose}
-              className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div className="relative flex-1 bg-white">
-          <iframe
-            src={url}
-            className="absolute inset-0 h-full w-full border-none"
-            title="Source Viewer"
-          />
-        </div>
-      </div>
     </div>
   );
 }
