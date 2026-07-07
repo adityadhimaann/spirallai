@@ -19,7 +19,7 @@ const AVAILABLE_INTERESTS = [
   "Crypto & Web3",
   "E-commerce",
   "Consumer Tech",
-  "Enterprise Software"
+  "Enterprise Software",
 ];
 
 export function OnboardingModal({ onComplete }: Props) {
@@ -48,10 +48,8 @@ export function OnboardingModal({ onComplete }: Props) {
   }, []);
 
   const toggleInterest = (interest: string) => {
-    setSelectedInterests(prev => 
-      prev.includes(interest) 
-        ? prev.filter(i => i !== interest)
-        : [...prev, interest]
+    setSelectedInterests((prev) =>
+      prev.includes(interest) ? prev.filter((i) => i !== interest) : [...prev, interest],
     );
   };
 
@@ -72,13 +70,13 @@ export function OnboardingModal({ onComplete }: Props) {
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-background/80 backdrop-blur-sm"
           />
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -101,8 +99,10 @@ export function OnboardingModal({ onComplete }: Props) {
                   exit={{ opacity: 0, x: 20 }}
                 >
                   <h2 className="mb-2 text-3xl font-semibold tracking-tight">Welcome to Spiral</h2>
-                  <p className="mb-8 text-muted-foreground">Before we begin researching, what should we call you?</p>
-                  
+                  <p className="mb-8 text-muted-foreground">
+                    Before we begin researching, what should we call you?
+                  </p>
+
                   <input
                     type="text"
                     autoFocus
@@ -112,7 +112,7 @@ export function OnboardingModal({ onComplete }: Props) {
                     onKeyDown={(e) => e.key === "Enter" && handleNext()}
                     className="w-full rounded-xl border border-border bg-secondary/50 px-4 py-3 text-lg outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
                   />
-                  
+
                   <div className="mt-8 flex justify-end">
                     <button
                       onClick={handleNext}
@@ -130,19 +130,23 @@ export function OnboardingModal({ onComplete }: Props) {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                 >
-                  <h2 className="mb-2 text-3xl font-semibold tracking-tight">What are you interested in?</h2>
-                  <p className="mb-6 text-muted-foreground">Select a few sectors to personalize your research suggestions.</p>
-                  
+                  <h2 className="mb-2 text-3xl font-semibold tracking-tight">
+                    What are you interested in?
+                  </h2>
+                  <p className="mb-6 text-muted-foreground">
+                    Select a few sectors to personalize your research suggestions.
+                  </p>
+
                   <div className="flex flex-wrap gap-2">
-                    {AVAILABLE_INTERESTS.map(interest => {
+                    {AVAILABLE_INTERESTS.map((interest) => {
                       const isSelected = selectedInterests.includes(interest);
                       return (
                         <button
                           key={interest}
                           onClick={() => toggleInterest(interest)}
                           className={`flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-all cursor-pointer ${
-                            isSelected 
-                              ? "border-primary bg-primary/10 text-primary shadow-[0_0_15px_rgba(var(--primary),0.2)]" 
+                            isSelected
+                              ? "border-primary bg-primary/10 text-primary shadow-[0_0_15px_rgba(var(--primary),0.2)]"
                               : "border-border bg-secondary/30 text-muted-foreground hover:bg-secondary hover:text-foreground"
                           }`}
                         >
@@ -152,7 +156,7 @@ export function OnboardingModal({ onComplete }: Props) {
                       );
                     })}
                   </div>
-                  
+
                   <div className="mt-10 flex justify-between">
                     <button
                       onClick={() => setStep(1)}

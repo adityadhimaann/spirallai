@@ -14,10 +14,13 @@ interface Props {
 }
 
 const emptySteps = (): Record<NodeKey, StepState> =>
-  NODE_STEPS.reduce((acc, s, i) => {
-    acc[s.key] = { status: i === 0 ? "active" : "pending", traces: [] };
-    return acc;
-  }, {} as Record<NodeKey, StepState>);
+  NODE_STEPS.reduce(
+    (acc, s, i) => {
+      acc[s.key] = { status: i === 0 ? "active" : "pending", traces: [] };
+      return acc;
+    },
+    {} as Record<NodeKey, StepState>,
+  );
 
 function normalizeNodeKey(node: string): NodeKey | null {
   const n = node.toLowerCase();
@@ -30,7 +33,15 @@ function normalizeNodeKey(node: string): NodeKey | null {
   return null;
 }
 
-export function ResearchView({ backendUrl, companyName, ticker, onReset, onComplete, isDeepMode, onFollowUpClick }: Props) {
+export function ResearchView({
+  backendUrl,
+  companyName,
+  ticker,
+  onReset,
+  onComplete,
+  isDeepMode,
+  onFollowUpClick,
+}: Props) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [partialData, setPartialData] = useState<any>({});
   const [result, setResult] = useState<ResearchResult | null>(null);
@@ -71,9 +82,9 @@ export function ResearchView({ backendUrl, companyName, ticker, onReset, onCompl
     }
 
     let url = `${backendUrl.replace(/\/$/, "")}/api/research/stream?companyName=${encodeURIComponent(
-      companyName
+      companyName,
     )}&ticker=${encodeURIComponent(ticker)}`;
-    
+
     if (isDeepMode) {
       url += `&deepMode=true`;
     }
@@ -103,7 +114,7 @@ export function ResearchView({ backendUrl, companyName, ticker, onReset, onCompl
       try {
         const data = JSON.parse(evt.data);
         setCurrentStepIndex(NODE_STEPS.length); // all done
-        
+
         const v = data?.verdict;
         if (!v || typeof v.verdict !== "string") {
           setError("Backend returned malformed result JSON.");
@@ -121,12 +132,12 @@ export function ResearchView({ backendUrl, companyName, ticker, onReset, onCompl
             news: data.news,
             competitive: data.competitive,
           } as ResearchResult;
-          
+
           setResult(finalResult);
           fetch("http://localhost:8081/api/results", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(finalResult)
+            body: JSON.stringify(finalResult),
           }).catch(console.error);
           onComplete?.(finalResult);
         }
@@ -152,29 +163,36 @@ export function ResearchView({ backendUrl, companyName, ticker, onReset, onCompl
     };
   }, [backendUrl, companyName, ticker]); // We intentionally omit `result` so it doesn't re-trigger loops, but it's checked initially
 
-  const steps = NODE_STEPS.reduce((acc, s, i) => {
-    let status: "done" | "active" | "pending" | "error" = "pending";
-    if (error) {
-      status = i === currentStepIndex ? "error" : i < currentStepIndex ? "done" : "pending";
-    } else {
-      status = i < currentStepIndex ? "done" : i === currentStepIndex ? "active" : "pending";
-    }
-    // inject partialData for the specific node
-    const dataForStep = s.key === "news" ? partialData.news 
-                      : s.key === "competitive" ? partialData.competitive 
-                      : s.key === "financials" ? partialData.financials 
-                      : null;
-    
-    acc[s.key] = { status, traces: [], data: dataForStep };
-    return acc;
-  }, {} as Record<NodeKey, StepState>);
+  const steps = NODE_STEPS.reduce(
+    (acc, s, i) => {
+      let status: "done" | "active" | "pending" | "error" = "pending";
+      if (error) {
+        status = i === currentStepIndex ? "error" : i < currentStepIndex ? "done" : "pending";
+      } else {
+        status = i < currentStepIndex ? "done" : i === currentStepIndex ? "active" : "pending";
+      }
+      // inject partialData for the specific node
+      const dataForStep =
+        s.key === "news"
+          ? partialData.news
+          : s.key === "competitive"
+            ? partialData.competitive
+            : s.key === "financials"
+              ? partialData.financials
+              : null;
+
+      acc[s.key] = { status, traces: [], data: dataForStep };
+      return acc;
+    },
+    {} as Record<NodeKey, StepState>,
+  );
 
   if (result) {
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <ResultsView 
-          result={result} 
-          companyName={companyName} 
+        <ResultsView
+          result={result}
+          companyName={companyName}
           ticker={ticker}
           onReset={onReset}
           onFollowUpClick={onFollowUpClick}

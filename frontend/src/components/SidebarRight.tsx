@@ -25,13 +25,10 @@ export function SidebarRight({ result }: Props) {
   return (
     <aside className="w-80 border-l border-border/60 bg-background/50 backdrop-blur flex flex-col h-full shrink-0 hidden lg:flex">
       <div className="p-4 border-b border-border/60">
-        <h2 className="font-semibold tracking-tight text-foreground text-sm">
-          Real-Time Context
-        </h2>
+        <h2 className="font-semibold tracking-tight text-foreground text-sm">Real-Time Context</h2>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        
         {/* News Section */}
         {articles.length > 0 && (
           <div>
@@ -56,13 +53,15 @@ export function SidebarRight({ result }: Props) {
                   >
                     <div className="flex items-center gap-2 mb-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
                       {domain && (
-                        <img 
-                          src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=16`} 
+                        <img
+                          src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=16`}
                           className="h-3 w-3 rounded-sm"
                           alt=""
                         />
                       )}
-                      <span className="text-[10px] font-medium text-muted-foreground">{domain || "News Source"}</span>
+                      <span className="text-[10px] font-medium text-muted-foreground">
+                        {domain || "News Source"}
+                      </span>
                       <ExternalLink className="h-2.5 w-2.5 ml-auto text-muted-foreground/50 group-hover:text-primary" />
                     </div>
                     <h3 className="text-xs font-medium text-foreground line-clamp-2 leading-snug">
@@ -99,13 +98,15 @@ export function SidebarRight({ result }: Props) {
                   >
                     <div className="flex items-center gap-2 mb-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
                       {domain && (
-                        <img 
-                          src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=16`} 
+                        <img
+                          src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=16`}
                           className="h-3 w-3 rounded-sm"
                           alt=""
                         />
                       )}
-                      <span className="text-[10px] font-medium text-muted-foreground">{domain || "Source"}</span>
+                      <span className="text-[10px] font-medium text-muted-foreground">
+                        {domain || "Source"}
+                      </span>
                     </div>
                     <h3 className="text-xs text-muted-foreground line-clamp-3 leading-snug">
                       {comp.content || comp.title}
@@ -116,7 +117,6 @@ export function SidebarRight({ result }: Props) {
             </div>
           </div>
         )}
-
       </div>
     </aside>
   );

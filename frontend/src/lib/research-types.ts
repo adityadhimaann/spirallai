@@ -1,4 +1,5 @@
-export type Verdict = "STRONG BUY" | "BUY" | "HOLD" | "REDUCE" | "SELL" | "INVEST" | "PASS" | "WATCH" | string;
+export type Verdict =
+  "STRONG BUY" | "BUY" | "HOLD" | "REDUCE" | "SELL" | "INVEST" | "PASS" | "WATCH" | string;
 
 export interface ResearchResult {
   verdict: Verdict;
@@ -14,13 +15,7 @@ export interface ResearchResult {
   [k: string]: unknown;
 }
 
-export type NodeKey =
-  | "financials"
-  | "news"
-  | "competitive"
-  | "bull"
-  | "bear"
-  | "judge";
+export type NodeKey = "financials" | "news" | "competitive" | "bull" | "bear" | "judge";
 
 export const NODE_STEPS: { key: NodeKey; label: string }[] = [
   { key: "financials", label: "Fetching financials" },

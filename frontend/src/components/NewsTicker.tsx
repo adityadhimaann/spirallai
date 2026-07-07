@@ -8,7 +8,7 @@ const TICKER_ITEMS = [
   "Bitcoin surpasses $70,000 mark again",
   "Microsoft expands partnership with OpenAI",
   "Amazon reports record prime day sales",
-  "S&P 500 hits new all-time high"
+  "S&P 500 hits new all-time high",
 ];
 
 export function NewsTicker() {

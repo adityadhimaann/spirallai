@@ -86,7 +86,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "SPIRAL" },
       {
         property: "og:description",
-        content: "Autonomous multi-agent equity research with a transparent Invest / Pass / Watch verdict.",
+        content:
+          "Autonomous multi-agent equity research with a transparent Invest / Pass / Watch verdict.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

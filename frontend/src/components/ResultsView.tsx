@@ -1,14 +1,25 @@
 import { useState, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import { ExternalLink, Check } from "lucide-react";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
 import type { ResearchResult, Verdict } from "@/lib/research-types";
 const VERDICT_STYLES: Record<string, { bg: string; text: string; label: string }> = {
   "STRONG BUY": { bg: "bg-success", text: "text-success-foreground", label: "STRONG BUY" },
-  "BUY": { bg: "bg-success", text: "text-success-foreground", label: "BUY" },
-  "HOLD": { bg: "bg-warning", text: "text-warning-foreground", label: "HOLD" },
-  "REDUCE": { bg: "bg-danger", text: "text-danger-foreground", label: "REDUCE" },
-  "SELL": { bg: "bg-danger", text: "text-danger-foreground", label: "SELL" },
+  BUY: { bg: "bg-success", text: "text-success-foreground", label: "BUY" },
+  HOLD: { bg: "bg-warning", text: "text-warning-foreground", label: "HOLD" },
+  REDUCE: { bg: "bg-danger", text: "text-danger-foreground", label: "REDUCE" },
+  SELL: { bg: "bg-danger", text: "text-danger-foreground", label: "SELL" },
   "STRONG SELL": { bg: "bg-danger", text: "text-danger-foreground", label: "STRONG SELL" },
   INVEST: { bg: "bg-success", text: "text-success-foreground", label: "INVEST" },
   PASS: { bg: "bg-danger", text: "text-danger-foreground", label: "PASS" },
@@ -20,8 +31,13 @@ function ConfidenceGauge({ value }: { value: number }) {
   return (
     <div className="w-full">
       <div className="mb-1.5 flex items-baseline justify-between">
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Confidence</span>
-        <span className="font-mono text-2xl font-semibold tabular-nums text-foreground">{v}<span className="text-sm text-muted-foreground">/100</span></span>
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Confidence
+        </span>
+        <span className="font-mono text-2xl font-semibold tabular-nums text-foreground">
+          {v}
+          <span className="text-sm text-muted-foreground">/100</span>
+        </span>
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
         <div
@@ -88,7 +104,10 @@ const ANIMATION_STYLES = `
 `;
 
 function renderBullets(text: string, type: "bull" | "bear", setActiveUrl: (url: string) => void) {
-  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
 
   // Extract the first line as an intro if it's not a bolded bullet point
   let intro = "";
@@ -111,7 +130,9 @@ function renderBullets(text: string, type: "bull" | "bear", setActiveUrl: (url: 
       <style>{ANIMATION_STYLES}</style>
       {/* Intro Subtitle */}
       {intro && (
-        <div className={`mb-6 text-[14px] leading-relaxed text-muted-foreground ${isMirrored ? "text-right" : "text-left"}`}>
+        <div
+          className={`mb-6 text-[14px] leading-relaxed text-muted-foreground ${isMirrored ? "text-right" : "text-left"}`}
+        >
           {intro}
         </div>
       )}
@@ -129,7 +150,13 @@ function renderBullets(text: string, type: "bull" | "bear", setActiveUrl: (url: 
           const isEven = i % 2 === 0;
 
           // Alternating zig-zag layout
-          const alignClass = isEven ? (isMirrored ? "ml-auto" : "mr-auto") : (isMirrored ? "mr-auto" : "ml-auto");
+          const alignClass = isEven
+            ? isMirrored
+              ? "ml-auto"
+              : "mr-auto"
+            : isMirrored
+              ? "mr-auto"
+              : "ml-auto";
 
           // Animations
           const popClass = alignClass === "mr-auto" ? "animate-pop-left" : "animate-pop-right";
@@ -139,11 +166,14 @@ function renderBullets(text: string, type: "bull" | "bear", setActiveUrl: (url: 
           const emptySpace = "18%";
           const lineStyle: React.CSSProperties = {
             [isMirrored ? "right" : "left"]: `-${trackOffset}`,
-            width: alignClass === (isMirrored ? "ml-auto" : "mr-auto") ? trackOffset : `calc(${emptySpace} + ${trackOffset})`,
+            width:
+              alignClass === (isMirrored ? "ml-auto" : "mr-auto")
+                ? trackOffset
+                : `calc(${emptySpace} + ${trackOffset})`,
             top: "24px",
             transformOrigin: isMirrored ? "right" : "left",
             opacity: 0,
-            animation: `scaleInX 0.4s ease-out ${delay + 0.15}s forwards`
+            animation: `scaleInX 0.4s ease-out ${delay + 0.15}s forwards`,
           };
 
           return (
@@ -156,7 +186,7 @@ function renderBullets(text: string, type: "bull" | "bear", setActiveUrl: (url: 
                 className={`absolute top-5 z-10 h-2.5 w-2.5 rounded-full ring-4 ring-background ${dotClass} animate-pop-scale`}
                 style={{
                   [isMirrored ? "right" : "left"]: `calc(-${trackOffset} - 4px)`,
-                  animationDelay: `${delay + 0.05}s`
+                  animationDelay: `${delay + 0.05}s`,
                 }}
               />
 
@@ -165,19 +195,24 @@ function renderBullets(text: string, type: "bull" | "bear", setActiveUrl: (url: 
                 className={`z-20 flex h-full w-[82%] flex-col justify-center rounded-lg border p-4 shadow-sm transition-colors hover:brightness-105 ${bgClass} ${alignClass} ${popClass}`}
                 style={{ animationDelay: `${delay}s` }}
               >
-                <div className={`text-[13px] leading-relaxed text-foreground/90 prose prose-sm dark:prose-invert max-w-none break-words prose-a:text-primary prose-a:no-underline hover:prose-a:underline ${isMirrored ? "text-right" : "text-left"}`}>
+                <div
+                  className={`text-[13px] leading-relaxed text-foreground/90 prose prose-sm dark:prose-invert max-w-none break-words prose-a:text-primary prose-a:no-underline hover:prose-a:underline ${isMirrored ? "text-right" : "text-left"}`}
+                >
                   <ReactMarkdown
                     components={{
                       a: ({ node, ...props }) => (
                         <button
-                          onClick={(e) => { e.preventDefault(); setActiveUrl(props.href || ""); }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setActiveUrl(props.href || "");
+                          }}
                           className="inline-flex items-center gap-1 font-semibold text-primary hover:underline bg-primary/10 px-1.5 py-0.5 rounded ml-1 my-0.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-full cursor-pointer"
                           title={props.href}
                         >
                           <span className="truncate">{props.children}</span>
                           <ExternalLink className="w-3 h-3 shrink-0" />
                         </button>
-                      )
+                      ),
                     }}
                   >
                     {clean}
@@ -193,7 +228,10 @@ function renderBullets(text: string, type: "bull" | "bear", setActiveUrl: (url: 
 }
 
 function renderReasoningBullets(text: string, setActiveUrl: (url: string) => void) {
-  let lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  let lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
 
   const hasBullets = lines.some((l) => /^[-*•]/.test(l) || /^\d+\./.test(l));
 
@@ -206,7 +244,13 @@ function renderReasoningBullets(text: string, setActiveUrl: (url: string) => voi
   }
 
   let intro = "";
-  if (hasBullets && lines.length > 0 && !/^[-*•]?\s*\*\*/.test(lines[0]) && !/^[-*•]/.test(lines[0]) && !/^\d+\./.test(lines[0])) {
+  if (
+    hasBullets &&
+    lines.length > 0 &&
+    !/^[-*•]?\s*\*\*/.test(lines[0]) &&
+    !/^[-*•]/.test(lines[0]) &&
+    !/^\d+\./.test(lines[0])
+  ) {
     intro = lines.shift() || "";
   }
 
@@ -235,14 +279,17 @@ function renderReasoningBullets(text: string, setActiveUrl: (url: string) => voi
                 components={{
                   a: ({ node, ...props }) => (
                     <button
-                      onClick={(e) => { e.preventDefault(); setActiveUrl(props.href || ""); }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setActiveUrl(props.href || "");
+                      }}
                       className="inline-flex items-center gap-1 font-semibold text-primary hover:underline bg-primary/10 px-1.5 py-0.5 rounded ml-1 my-0.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-full cursor-pointer"
                       title={props.href}
                     >
                       <span className="truncate">{props.children}</span>
                       <ExternalLink className="w-3 h-3 shrink-0" />
                     </button>
-                  )
+                  ),
                 }}
               >
                 {clean}
@@ -287,14 +334,35 @@ interface SourceItem {
 }
 
 function getDomainBadge(domain: string): { label: string; bg: string; text: string } | null {
-  if (domain.includes("sec.gov") || domain.includes("investor.") || domain.includes("apple.com") || domain.includes("tesla.com")) return { label: "OFFICIAL", bg: "bg-success/20", text: "text-success" };
+  if (
+    domain.includes("sec.gov") ||
+    domain.includes("investor.") ||
+    domain.includes("apple.com") ||
+    domain.includes("tesla.com")
+  )
+    return { label: "OFFICIAL", bg: "bg-success/20", text: "text-success" };
   if (domain.endsWith(".gov")) return { label: "GOV", bg: "bg-blue-500/20", text: "text-blue-500" };
-  if (domain.endsWith(".edu")) return { label: "ACADEMIC", bg: "bg-purple-500/20", text: "text-purple-500" };
-  if (domain.includes("bloomberg") || domain.includes("cnbc") || domain.includes("wsj") || domain.includes("reuters") || domain.includes("ft.com") || domain.includes("stocktitan")) return { label: "NEWS", bg: "bg-orange-500/20", text: "text-orange-500" };
+  if (domain.endsWith(".edu"))
+    return { label: "ACADEMIC", bg: "bg-purple-500/20", text: "text-purple-500" };
+  if (
+    domain.includes("bloomberg") ||
+    domain.includes("cnbc") ||
+    domain.includes("wsj") ||
+    domain.includes("reuters") ||
+    domain.includes("ft.com") ||
+    domain.includes("stocktitan")
+  )
+    return { label: "NEWS", bg: "bg-orange-500/20", text: "text-orange-500" };
   return null;
 }
 
-function SourceCard({ source, setActiveUrl }: { source: SourceItem, setActiveUrl: (url: string) => void }) {
+function SourceCard({
+  source,
+  setActiveUrl,
+}: {
+  source: SourceItem;
+  setActiveUrl: (url: string) => void;
+}) {
   let domain = "";
   try {
     domain = new URL(source.url).hostname.replace(/^www\./, "");
@@ -310,7 +378,10 @@ function SourceCard({ source, setActiveUrl }: { source: SourceItem, setActiveUrl
 
   return (
     <button
-      onClick={(e) => { e.preventDefault(); setActiveUrl(isMock ? "" : source.url); }}
+      onClick={(e) => {
+        e.preventDefault();
+        setActiveUrl(isMock ? "" : source.url);
+      }}
       className="group relative flex h-full flex-col text-left rounded-xl border border-white/10 bg-card/30 backdrop-blur-xl p-4 shadow-[0_4px_20px_rgb(0,0,0,0.1)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/40 hover:bg-card/50 hover:shadow-[0_8px_30px_rgba(var(--primary),0.15)] cursor-pointer"
     >
       <div className="flex items-start gap-3">
@@ -323,9 +394,13 @@ function SourceCard({ source, setActiveUrl }: { source: SourceItem, setActiveUrl
         </div>
         <div className="flex-1 overflow-hidden">
           <div className="flex items-center gap-2">
-            <div className="truncate text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{domain}</div>
+            <div className="truncate text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {domain}
+            </div>
             {badge && (
-              <span className={`rounded-sm px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${badge.bg} ${badge.text}`}>
+              <span
+                className={`rounded-sm px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${badge.bg} ${badge.text}`}
+              >
                 {badge.label}
               </span>
             )}
@@ -340,7 +415,14 @@ function SourceCard({ source, setActiveUrl }: { source: SourceItem, setActiveUrl
       <div className="grid grid-rows-[0fr] transition-all duration-300 group-hover:grid-rows-[1fr]">
         <div className="overflow-hidden">
           <p className="mt-3 text-xs leading-relaxed text-muted-foreground line-clamp-4">
-            {source.snippet ? source.snippet.replace(/[|]/g, "").replace(/---/g, "").replace(/Date: \w{3} \d{1,2}, \d{4}/g, "").replace(/\s+/g, " ").trim() : ""}
+            {source.snippet
+              ? source.snippet
+                  .replace(/[|]/g, "")
+                  .replace(/---/g, "")
+                  .replace(/Date: \w{3} \d{1,2}, \d{4}/g, "")
+                  .replace(/\s+/g, " ")
+                  .trim()
+              : ""}
           </p>
         </div>
       </div>
@@ -348,7 +430,15 @@ function SourceCard({ source, setActiveUrl }: { source: SourceItem, setActiveUrl
   );
 }
 
-function SourcesSection({ news, competitive, setActiveUrl }: { news: any; competitive: any; setActiveUrl: (url: string) => void }) {
+function SourcesSection({
+  news,
+  competitive,
+  setActiveUrl,
+}: {
+  news: any;
+  competitive: any;
+  setActiveUrl: (url: string) => void;
+}) {
   const sources: SourceItem[] = [];
 
   if (news?.articles && Array.isArray(news.articles)) {
@@ -377,7 +467,15 @@ function SourcesSection({ news, competitive, setActiveUrl }: { news: any; compet
   );
 }
 
-function NewsAnalytics({ companyName, news, setActiveUrl }: { companyName: string, news: any, setActiveUrl: (url: string) => void }) {
+function NewsAnalytics({
+  companyName,
+  news,
+  setActiveUrl,
+}: {
+  companyName: string;
+  news: any;
+  setActiveUrl: (url: string) => void;
+}) {
   const sources: SourceItem[] = news?.articles && Array.isArray(news.articles) ? news.articles : [];
 
   const analytics = useMemo(() => {
@@ -390,21 +488,24 @@ function NewsAnalytics({ companyName, news, setActiveUrl }: { companyName: strin
     const neg = 100 - pos - neu;
 
     const sentimentData = [
-      { name: 'Positive', value: pos, color: '#10b981' },
-      { name: 'Neutral', value: neu, color: '#64748b' },
-      { name: 'Negative', value: neg, color: '#ef4444' }
+      { name: "Positive", value: pos, color: "#10b981" },
+      { name: "Neutral", value: neu, color: "#64748b" },
+      { name: "Negative", value: neg, color: "#ef4444" },
     ];
 
     // Simulate Volume over last 5 days
     const volumeData = Array.from({ length: 5 }).map((_, i) => ({
       day: `Day ${i + 1}`,
-      mentions: 10 + ((base * (i + 1)) % 40)
+      mentions: 10 + ((base * (i + 1)) % 40),
     }));
 
     // Mock summary text based on sentiment
     let summary = `Recent media coverage for ${companyName} has been predominantly `;
-    if (pos > 50) summary += "optimistic, driven by strong growth metrics and favorable market positioning.";
-    else if (neg > 40) summary += "cautious, with significant concerns raised regarding macroeconomic headwinds and execution risks.";
+    if (pos > 50)
+      summary += "optimistic, driven by strong growth metrics and favorable market positioning.";
+    else if (neg > 40)
+      summary +=
+        "cautious, with significant concerns raised regarding macroeconomic headwinds and execution risks.";
     else summary += "mixed, balancing steady core performance against emerging sector volatility.";
 
     return { sentimentData, volumeData, summary };
@@ -413,7 +514,13 @@ function NewsAnalytics({ companyName, news, setActiveUrl }: { companyName: strin
   return (
     <div className="mb-10">
       <div className="mb-4 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          viewBox="0 0 24 24"
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="M3 3v18h18M18 9l-5 5-4-4-5 5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         News & Sentiment Analytics
@@ -423,33 +530,54 @@ function NewsAnalytics({ companyName, news, setActiveUrl }: { companyName: strin
         {/* Summary Card */}
         <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-card/30 backdrop-blur-xl p-6 shadow-sm ring-1 ring-white/5 flex flex-col justify-center">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50" />
-          <h4 className="text-sm font-semibold text-foreground mb-3 relative z-10">AI Sentiment Summary</h4>
+          <h4 className="text-sm font-semibold text-foreground mb-3 relative z-10">
+            AI Sentiment Summary
+          </h4>
           <p className="text-sm leading-relaxed text-muted-foreground relative z-10">
             {analytics.summary}
           </p>
           <div className="mt-6 pt-4 border-t border-border/50 flex flex-col gap-2 relative z-10">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs text-muted-foreground">Top Sources</span>
-              <span className="font-mono text-sm font-semibold text-primary">{sources.length > 0 ? sources.length : 12} analyzed</span>
+              <span className="font-mono text-sm font-semibold text-primary">
+                {sources.length > 0 ? sources.length : 12} analyzed
+              </span>
             </div>
             {sources.length > 0 ? (
               <div className="flex flex-col gap-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
                 {sources.slice(0, 4).map((src, i) => (
-                  <button key={i} onClick={() => setActiveUrl(src.url)} className="text-xs text-left text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 truncate cursor-pointer">
-                    <svg viewBox="0 0 24 24" className="h-3 w-3 shrink-0" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
+                  <button
+                    key={i}
+                    onClick={() => setActiveUrl(src.url)}
+                    className="text-xs text-left text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 truncate cursor-pointer"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-3 w-3 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
                     <span className="truncate">{src.title}</span>
                   </button>
                 ))}
               </div>
             ) : (
-              <span className="text-xs text-muted-foreground italic">No direct sources available.</span>
+              <span className="text-xs text-muted-foreground italic">
+                No direct sources available.
+              </span>
             )}
           </div>
         </div>
 
         {/* Sentiment Pie Chart */}
         <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-card/30 backdrop-blur-xl p-6 shadow-sm ring-1 ring-white/5 flex flex-col items-center">
-          <h4 className="text-sm font-semibold text-foreground mb-2 w-full">Sentiment Distribution</h4>
+          <h4 className="text-sm font-semibold text-foreground mb-2 w-full">
+            Sentiment Distribution
+          </h4>
           <div className="h-[180px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -468,15 +596,29 @@ function NewsAnalytics({ companyName, news, setActiveUrl }: { companyName: strin
                   ))}
                 </Pie>
                 <RechartsTooltip
-                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
-                  itemStyle={{ color: 'hsl(var(--foreground))' }}
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    borderColor: "hsl(var(--border))",
+                    borderRadius: "8px",
+                  }}
+                  itemStyle={{ color: "hsl(var(--foreground))" }}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
           <div className="mt-4 w-full flex justify-end">
             <span className="text-[10px] text-muted-foreground italic flex items-center gap-1">
-              Data derived from: {sources.length > 0 ? <button onClick={() => setActiveUrl(sources[0].url)} className="hover:text-primary hover:underline cursor-pointer">{new URL(sources[0].url).hostname || "Source"}</button> : "AI Analysis"}
+              Data derived from:{" "}
+              {sources.length > 0 ? (
+                <button
+                  onClick={() => setActiveUrl(sources[0].url)}
+                  className="hover:text-primary hover:underline cursor-pointer"
+                >
+                  {new URL(sources[0].url).hostname || "Source"}
+                </button>
+              ) : (
+                "AI Analysis"
+              )}
             </span>
           </div>
         </div>
@@ -486,13 +628,31 @@ function NewsAnalytics({ companyName, news, setActiveUrl }: { companyName: strin
           <h4 className="text-sm font-semibold text-foreground mb-4">Coverage Volume (5D)</h4>
           <div className="flex-1 w-full min-h-[160px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analytics.volumeData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+              <BarChart
+                data={analytics.volumeData}
+                margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
+                <XAxis
+                  dataKey="day"
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                />
                 <RechartsTooltip
-                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
-                  cursor={{ fill: 'hsl(var(--secondary))' }}
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    borderColor: "hsl(var(--border))",
+                    borderRadius: "8px",
+                  }}
+                  cursor={{ fill: "hsl(var(--secondary))" }}
                 />
                 <Bar dataKey="mentions" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -500,7 +660,17 @@ function NewsAnalytics({ companyName, news, setActiveUrl }: { companyName: strin
           </div>
           <div className="mt-4 w-full flex justify-end">
             <span className="text-[10px] text-muted-foreground italic flex items-center gap-1">
-              Data derived from: {sources.length > 0 ? <button onClick={() => setActiveUrl(sources[0].url)} className="hover:text-primary hover:underline cursor-pointer">{new URL(sources[0].url).hostname || "Source"}</button> : "AI Analysis"}
+              Data derived from:{" "}
+              {sources.length > 0 ? (
+                <button
+                  onClick={() => setActiveUrl(sources[0].url)}
+                  className="hover:text-primary hover:underline cursor-pointer"
+                >
+                  {new URL(sources[0].url).hostname || "Source"}
+                </button>
+              ) : (
+                "AI Analysis"
+              )}
             </span>
           </div>
         </div>
@@ -543,7 +713,11 @@ export function ResultsView({ result, onReset, companyName, ticker, onFollowUpCl
         </button>
       </div>
 
-      <SourcesSection news={result.news} competitive={result.competitive} setActiveUrl={setActiveUrl} />
+      <SourcesSection
+        news={result.news}
+        competitive={result.competitive}
+        setActiveUrl={setActiveUrl}
+      />
 
       {/* Verdict card */}
       <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-card/40 backdrop-blur-2xl p-8 shadow-[0_8px_32px_rgb(0,0,0,0.15)] ring-1 ring-white/5">
@@ -552,7 +726,9 @@ export function ResultsView({ result, onReset, companyName, ticker, onFollowUpCl
           {/* Logo & Verdict Badge Stack */}
           <div className="flex shrink-0 flex-col items-center gap-3">
             <CompanyLogo name={companyName} ticker={ticker} />
-            <div className={`inline-flex items-center justify-center rounded-full px-4 py-1 text-xs font-bold tracking-widest ${v.bg} ${v.text} ring-1 ring-inset ${v.text.replace('text-', 'ring-')}/30 shadow-sm`}>
+            <div
+              className={`inline-flex items-center justify-center rounded-full px-4 py-1 text-xs font-bold tracking-widest ${v.bg} ${v.text} ring-1 ring-inset ${v.text.replace("text-", "ring-")}/30 shadow-sm`}
+            >
               {v.label}
             </div>
           </div>
@@ -565,7 +741,9 @@ export function ResultsView({ result, onReset, companyName, ticker, onFollowUpCl
 
       <div className="mt-8 relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-card/40 to-card/10 backdrop-blur-2xl p-8 shadow-[0_10px_40px_rgb(0,0,0,0.2)]">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(var(--primary),0.05)_0%,transparent_70%)]" />
-        <div className="absolute top-8 left-8 text-6xl text-primary/10 font-serif leading-none italic select-none">"</div>
+        <div className="absolute top-8 left-8 text-6xl text-primary/10 font-serif leading-none italic select-none">
+          "
+        </div>
         <div className="relative z-10">
           {renderReasoningBullets(result.reasoning, setActiveUrl)}
         </div>
@@ -586,7 +764,13 @@ export function ResultsView({ result, onReset, companyName, ticker, onFollowUpCl
                 className="flex flex-1 items-center gap-3 rounded-xl border border-warning/30 bg-warning/5 backdrop-blur-md px-5 py-3.5 text-xs font-medium leading-relaxed text-warning shadow-sm transition-all duration-300 hover:bg-warning/10 hover:shadow-[0_0_20px_rgba(234,179,8,0.15)] hover:-translate-y-0.5 prose prose-sm dark:prose-invert prose-a:text-warning prose-a:underline"
               >
                 <svg viewBox="0 0 20 20" className="h-4 w-4 shrink-0" fill="currentColor">
-                  <path d="M10 2L1 18h18L10 2zm0 6v4m0 2v.01" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                  <path
+                    d="M10 2L1 18h18L10 2zm0 6v4m0 2v.01"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    fill="none"
+                    strokeLinecap="round"
+                  />
                 </svg>
                 <ReactMarkdown>{risk}</ReactMarkdown>
               </div>
@@ -600,29 +784,37 @@ export function ResultsView({ result, onReset, companyName, ticker, onFollowUpCl
         <div className="flex flex-col">
           <div className="mb-4 flex flex-row-reverse items-center justify-start gap-2 pr-6">
             <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success/20 text-success">
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
                 <path d="M12 19V5m-7 7l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <h3 className="text-sm font-bold uppercase tracking-wider text-success">Bull case</h3>
           </div>
-          <div className="flex-1">
-            {renderBullets(result.bullCase || "", "bull", setActiveUrl)}
-          </div>
+          <div className="flex-1">{renderBullets(result.bullCase || "", "bull", setActiveUrl)}</div>
         </div>
 
         <div className="flex flex-col">
           <div className="mb-4 flex items-center gap-2 pl-6">
             <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-danger/20 text-danger">
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
                 <path d="M12 5v14m7-7l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <h3 className="text-sm font-bold uppercase tracking-wider text-danger">Bear case</h3>
           </div>
-          <div className="flex-1">
-            {renderBullets(result.bearCase || "", "bear", setActiveUrl)}
-          </div>
+          <div className="flex-1">{renderBullets(result.bearCase || "", "bear", setActiveUrl)}</div>
         </div>
       </div>
 
@@ -635,7 +827,13 @@ export function ResultsView({ result, onReset, companyName, ticker, onFollowUpCl
       {result.knowledgeGaps && result.knowledgeGaps.length > 0 && (
         <div className="mt-8 border-t border-border pt-8 mb-8">
           <div className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <circle cx="12" cy="12" r="10" />
               <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
               <line x1="12" y1="17" x2="12.01" y2="17" />
@@ -676,17 +874,37 @@ function IframeModal({ url, onClose }: { url: string; onClose: () => void }) {
             <span className="truncate text-sm font-medium text-foreground">{url}</span>
           </div>
           <div className="flex items-center gap-3 shrink-0 ml-4">
-            <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-medium text-primary hover:underline flex items-center gap-1"
+            >
               Open Original <ExternalLink className="h-3 w-3" />
             </a>
             <div className="h-4 w-px bg-border/60" />
-            <button onClick={onClose} className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer">
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+            <button
+              onClick={onClose}
+              className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
             </button>
           </div>
         </div>
         <div className="relative flex-1 bg-white">
-          <iframe src={url} className="absolute inset-0 h-full w-full border-none" title="Source Viewer" />
+          <iframe
+            src={url}
+            className="absolute inset-0 h-full w-full border-none"
+            title="Source Viewer"
+          />
         </div>
       </div>
     </div>

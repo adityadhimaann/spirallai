@@ -16,8 +16,16 @@ export function SidebarLeft({ sessions, activeSessionId, onSelectSession, onNewC
       <div className="flex h-16 items-center pl-[22px] pr-4 border-b border-border/60 overflow-hidden shrink-0">
         <div className="flex items-center gap-3 w-[200px]">
           <div className="h-6 w-6 shrink-0 rounded-full bg-primary/20 text-primary shadow-[0_0_12px_var(--primary)] flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" className="h-4 w-4">
-              <path d="M50 50 m0 -40 a40 40 0 1 1 -40 40 a30 30 0 1 0 30 -30 a20 20 0 1 1 -20 20 a10 10 0 1 0 10 -10"/>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 100 100"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="6"
+              strokeLinecap="round"
+              className="h-4 w-4"
+            >
+              <path d="M50 50 m0 -40 a40 40 0 1 1 -40 40 a30 30 0 1 0 30 -30 a20 20 0 1 1 -20 20 a10 10 0 1 0 10 -10" />
             </svg>
           </div>
           <span className="font-light italic tracking-[0.15em] text-foreground lowercase opacity-0 transition-opacity duration-300 group-hover:opacity-100 whitespace-nowrap">
@@ -25,7 +33,7 @@ export function SidebarLeft({ sessions, activeSessionId, onSelectSession, onNewC
           </span>
         </div>
       </div>
-      
+
       {/* Actions */}
       <div className="p-3 border-b border-border/60 shrink-0">
         <button
@@ -69,16 +77,16 @@ export function SidebarLeft({ sessions, activeSessionId, onSelectSession, onNewC
                 }`}
               >
                 <div className="absolute left-[16px] flex items-center justify-center h-5 w-5 bg-secondary/50 rounded overflow-hidden">
-                  <img 
-                    src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${session.company.toLowerCase().replace(/[^a-z0-9]/g, "") + ".com"}&size=32`} 
+                  <img
+                    src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${session.company.toLowerCase().replace(/[^a-z0-9]/g, "") + ".com"}&size=32`}
                     alt=""
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
+                      (e.target as HTMLImageElement).style.display = "none";
                     }}
                   />
                 </div>
-                
+
                 <div className="ml-8 flex flex-col items-start opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                   <span className="truncate w-40 text-sm font-medium text-left">
                     {session.company}
