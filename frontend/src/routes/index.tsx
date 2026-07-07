@@ -554,8 +554,49 @@ function Index() {
                       >
                         {msg.role === "assistant" ? (
                           <div className="flex flex-col">
-                            <div className="prose prose-sm dark:prose-invert max-w-none prose-a:text-primary prose-a:no-underline hover:prose-a:underline">
-                              <ReactMarkdown>{msg.content}</ReactMarkdown>
+                            <div className="flex flex-col gap-2 w-full text-[15px] leading-relaxed">
+                              <ReactMarkdown
+                                components={{
+                                  p: ({ node, ...props }) => <p className="mb-4 text-foreground/90 last:mb-0" {...props} />,
+                                  ul: ({ node, ...props }) => <ul className="flex flex-col gap-3 my-4 list-none p-0" {...props} />,
+                                  ol: ({ node, ...props }) => <ol className="flex flex-col gap-3 my-4 list-none p-0" {...props} />,
+                                  li: ({ node, ...props }) => (
+                                    <li className="group relative flex items-start gap-4 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card hover:shadow-md">
+                                      <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+                                        <Check className="h-3 w-3" />
+                                      </div>
+                                      <div className="flex-1 text-foreground">
+                                        {props.children}
+                                      </div>
+                                    </li>
+                                  ),
+                                  a: ({ node, ...props }) => (
+                                    <button
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        if (props.href) window.open(props.href, "_blank", "noopener,noreferrer");
+                                      }}
+                                      className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline bg-primary/10 px-2 py-0.5 rounded ml-1 my-0.5 cursor-pointer text-[13px] border border-primary/20"
+                                      title={props.href}
+                                    >
+                                      <span className="truncate max-w-[200px]">{props.children}</span>
+                                    </button>
+                                  ),
+                                  h1: ({ node, ...props }) => <h1 className="text-xl font-bold text-foreground mt-8 mb-4" {...props} />,
+                                  h2: ({ node, ...props }) => <h2 className="text-lg font-bold text-foreground mt-8 mb-4 border-b border-border/50 pb-2" {...props} />,
+                                  h3: ({ node, ...props }) => <h3 className="text-sm font-bold uppercase tracking-wider text-primary mt-6 mb-3" {...props} />,
+                                  table: ({ node, ...props }) => (
+                                    <div className="overflow-x-auto my-6 rounded-xl border border-border bg-card">
+                                      <table className="w-full text-sm text-left" {...props} />
+                                    </div>
+                                  ),
+                                  th: ({ node, ...props }) => <th className="bg-muted/50 px-4 py-3 font-semibold text-muted-foreground border-b border-border" {...props} />,
+                                  td: ({ node, ...props }) => <td className="px-4 py-3 border-b border-border/50 last:border-0" {...props} />,
+                                  strong: ({ node, ...props }) => <strong className="font-semibold text-foreground" {...props} />,
+                                }}
+                              >
+                                {msg.content}
+                              </ReactMarkdown>
                             </div>
                             <ChatActions content={msg.content} />
                           </div>
