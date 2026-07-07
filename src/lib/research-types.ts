@@ -1,4 +1,4 @@
-export type Verdict = "INVEST" | "PASS" | "WATCH";
+export type Verdict = "STRONG BUY" | "BUY" | "HOLD" | "REDUCE" | "SELL" | "INVEST" | "PASS" | "WATCH" | string;
 
 export interface ResearchResult {
   verdict: Verdict;
@@ -30,3 +30,20 @@ export const NODE_STEPS: { key: NodeKey; label: string }[] = [
   { key: "bear", label: "Building bear case" },
   { key: "judge", label: "Judge deciding" },
 ];
+
+export type Message = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  isInitialResearch?: boolean; // flag to render ResearchView
+  isDeepMode?: boolean;
+};
+
+export type ChatSession = {
+  id: string;
+  company: string;
+  ticker?: string;
+  timestamp: number;
+  messages: Message[];
+  isDeepMode?: boolean;
+};

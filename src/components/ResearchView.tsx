@@ -8,7 +8,9 @@ interface Props {
   companyName: string;
   ticker: string;
   onReset: () => void;
-  onComplete?: () => void;
+  onComplete?: (result?: ResearchResult) => void;
+  isDeepMode?: boolean;
+  onFollowUpClick?: (q: string) => void;
 }
 
 const emptySteps = (): Record<NodeKey, StepState> =>
@@ -28,22 +30,34 @@ function normalizeNodeKey(node: string): NodeKey | null {
   return null;
 }
 
-export function ResearchView({ backendUrl, companyName, ticker, onReset, onComplete }: Props) {
+export function ResearchView({ backendUrl, companyName, ticker, onReset, onComplete, isDeepMode, onFollowUpClick }: Props) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [partialData, setPartialData] = useState<any>({});
-  const [result, setResult] = useState<ResearchResult | null>(() => {
-    try {
-      const saved = localStorage.getItem("research_result");
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [result, setResult] = useState<ResearchResult | null>(null);
+
+  // On mount, check if we already have a cached completed result from API
+  useEffect(() => {
+    const fetchCached = async () => {
+      try {
+        const cachedResponse = await fetch(`http://localhost:8081/api/results/${companyName}`);
+        if (cachedResponse.ok) {
+          const cached = await cachedResponse.json();
+          if (cached && cached.verdict) {
+            setResult(cached as ResearchResult);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load cached result:", err);
+      }
+    };
+    fetchCached();
+  }, [companyName]);
+
   const [error, setError] = useState<string | null>(null);
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    // If we loaded a completed result from localStorage, don't re-fetch
+    // If we loaded a completed result, don't re-fetch
     if (result) return;
 
     setCurrentStepIndex(0);
@@ -56,9 +70,13 @@ export function ResearchView({ backendUrl, companyName, ticker, onReset, onCompl
       return;
     }
 
-    const url = `${backendUrl.replace(/\/$/, "")}/api/research/stream?companyName=${encodeURIComponent(
+    let url = `${backendUrl.replace(/\/$/, "")}/api/research/stream?companyName=${encodeURIComponent(
       companyName
     )}&ticker=${encodeURIComponent(ticker)}`;
+    
+    if (isDeepMode) {
+      url += `&deepMode=true`;
+    }
 
     let es: EventSource;
     try {
@@ -91,6 +109,7 @@ export function ResearchView({ backendUrl, companyName, ticker, onReset, onCompl
           setError("Backend returned malformed result JSON.");
         } else {
           const finalResult = {
+            company: companyName,
             verdict: v.verdict,
             confidence: v.confidence,
             reasoning: v.reasoning,
@@ -104,8 +123,12 @@ export function ResearchView({ backendUrl, companyName, ticker, onReset, onCompl
           } as ResearchResult;
           
           setResult(finalResult);
-          localStorage.setItem("research_result", JSON.stringify(finalResult));
-          onComplete?.();
+          fetch("http://localhost:8081/api/results", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(finalResult)
+          }).catch(console.error);
+          onComplete?.(finalResult);
         }
       } catch (e) {
         setError(`Failed to parse final result: ${(e as Error).message}`);
@@ -147,7 +170,17 @@ export function ResearchView({ backendUrl, companyName, ticker, onReset, onCompl
   }, {} as Record<NodeKey, StepState>);
 
   if (result) {
-    return <ResultsView result={result} onReset={onReset} companyName={companyName} ticker={ticker} />;
+    return (
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <ResultsView 
+          result={result} 
+          companyName={companyName} 
+          ticker={ticker}
+          onReset={onReset}
+          onFollowUpClick={onFollowUpClick}
+        />
+      </div>
+    );
   }
 
   return (
@@ -157,7 +190,7 @@ export function ResearchView({ backendUrl, companyName, ticker, onReset, onCompl
           {error}
         </div>
       )}
-      <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
+      <div className="rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
         <Stepper steps={steps} />
       </div>
     </div>

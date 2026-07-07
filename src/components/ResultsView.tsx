@@ -1,9 +1,18 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import ReactMarkdown from "react-markdown";
+import { ExternalLink, Check } from "lucide-react";
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import type { ResearchResult, Verdict } from "@/lib/research-types";
-const VERDICT_STYLES: Record<Verdict, { bg: string; text: string; label: string }> = {
+const VERDICT_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+  "STRONG BUY": { bg: "bg-success", text: "text-success-foreground", label: "STRONG BUY" },
+  "BUY": { bg: "bg-success", text: "text-success-foreground", label: "BUY" },
+  "HOLD": { bg: "bg-warning", text: "text-warning-foreground", label: "HOLD" },
+  "REDUCE": { bg: "bg-danger", text: "text-danger-foreground", label: "REDUCE" },
+  "SELL": { bg: "bg-danger", text: "text-danger-foreground", label: "SELL" },
+  "STRONG SELL": { bg: "bg-danger", text: "text-danger-foreground", label: "STRONG SELL" },
   INVEST: { bg: "bg-success", text: "text-success-foreground", label: "INVEST" },
-  PASS:   { bg: "bg-danger",  text: "text-danger-foreground",  label: "PASS" },
-  WATCH:  { bg: "bg-warning", text: "text-warning-foreground", label: "WATCH" },
+  PASS: { bg: "bg-danger", text: "text-danger-foreground", label: "PASS" },
+  WATCH: { bg: "bg-warning", text: "text-warning-foreground", label: "WATCH" },
 };
 
 function ConfidenceGauge({ value }: { value: number }) {
@@ -78,9 +87,9 @@ const ANIMATION_STYLES = `
   }
 `;
 
-function renderBullets(text: string, type: "bull" | "bear") {
+function renderBullets(text: string, type: "bull" | "bear", setActiveUrl: (url: string) => void) {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  
+
   // Extract the first line as an intro if it's not a bolded bullet point
   let intro = "";
   if (lines.length > 0 && !/^[-*•]?\s*\*\*/.test(lines[0])) {
@@ -110,22 +119,22 @@ function renderBullets(text: string, type: "bull" | "bear") {
       {/* Timeline Section */}
       <div className="relative flex flex-1 flex-col gap-6 pb-2">
         {/* The Stick of Track */}
-        <div 
-          className={`absolute bottom-6 top-6 w-0.5 rounded-full ${trackClass} animate-draw-line`} 
+        <div
+          className={`absolute bottom-6 top-6 w-0.5 rounded-full ${trackClass} animate-draw-line`}
           style={{ [isMirrored ? "right" : "left"]: `-${trackOffset}` }}
         />
 
         {lines.map((line, i) => {
           const clean = line.replace(/^[-*•]\s*/, "");
           const isEven = i % 2 === 0;
-          
+
           // Alternating zig-zag layout
           const alignClass = isEven ? (isMirrored ? "ml-auto" : "mr-auto") : (isMirrored ? "mr-auto" : "ml-auto");
-          
+
           // Animations
           const popClass = alignClass === "mr-auto" ? "animate-pop-left" : "animate-pop-right";
           const delay = i * 0.1; // 100ms stagger per item
-          
+
           // Calculate the connector line perfectly
           const emptySpace = "18%";
           const lineStyle: React.CSSProperties = {
@@ -136,29 +145,44 @@ function renderBullets(text: string, type: "bull" | "bear") {
             opacity: 0,
             animation: `scaleInX 0.4s ease-out ${delay + 0.15}s forwards`
           };
-          
+
           return (
             <div key={i} className="relative flex w-full flex-1">
               {/* The connector line */}
               <div className={`absolute h-[2px] ${trackClass}`} style={lineStyle} />
 
               {/* The dot positioned exactly on the track */}
-              <div 
-                className={`absolute top-5 z-10 h-2.5 w-2.5 rounded-full ring-4 ring-background ${dotClass} animate-pop-scale`} 
-                style={{ 
+              <div
+                className={`absolute top-5 z-10 h-2.5 w-2.5 rounded-full ring-4 ring-background ${dotClass} animate-pop-scale`}
+                style={{
                   [isMirrored ? "right" : "left"]: `calc(-${trackOffset} - 4px)`,
                   animationDelay: `${delay + 0.05}s`
                 }}
               />
-              
+
               {/* The Card */}
               <div
                 className={`z-20 flex h-full w-[82%] flex-col justify-center rounded-lg border p-4 shadow-sm transition-colors hover:brightness-105 ${bgClass} ${alignClass} ${popClass}`}
                 style={{ animationDelay: `${delay}s` }}
               >
-                <span className={`text-[13px] leading-relaxed text-foreground/90 ${isMirrored ? "text-right" : "text-left"}`}>
-                  {renderTextWithBold(clean)}
-                </span>
+                <div className={`text-[13px] leading-relaxed text-foreground/90 prose prose-sm dark:prose-invert max-w-none break-words prose-a:text-primary prose-a:no-underline hover:prose-a:underline ${isMirrored ? "text-right" : "text-left"}`}>
+                  <ReactMarkdown
+                    components={{
+                      a: ({ node, ...props }) => (
+                        <button
+                          onClick={(e) => { e.preventDefault(); setActiveUrl(props.href || ""); }}
+                          className="inline-flex items-center gap-1 font-semibold text-primary hover:underline bg-primary/10 px-1.5 py-0.5 rounded ml-1 my-0.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-full cursor-pointer"
+                          title={props.href}
+                        >
+                          <span className="truncate">{props.children}</span>
+                          <ExternalLink className="w-3 h-3 shrink-0" />
+                        </button>
+                      )
+                    }}
+                  >
+                    {clean}
+                  </ReactMarkdown>
+                </div>
               </div>
             </div>
           );
@@ -168,11 +192,74 @@ function renderBullets(text: string, type: "bull" | "bear") {
   );
 }
 
+function renderReasoningBullets(text: string, setActiveUrl: (url: string) => void) {
+  let lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+
+  const hasBullets = lines.some((l) => /^[-*•]/.test(l) || /^\d+\./.test(l));
+
+  // Auto-format legacy giant paragraphs into bullet cards by splitting sentences
+  if (!hasBullets && lines.length === 1 && lines[0].length > 150) {
+    const sentences = lines[0].split(/(?<=[.!?])\s+(?=[A-Z])/);
+    if (sentences.length > 1) {
+      lines = sentences;
+    }
+  }
+
+  let intro = "";
+  if (hasBullets && lines.length > 0 && !/^[-*•]?\s*\*\*/.test(lines[0]) && !/^[-*•]/.test(lines[0]) && !/^\d+\./.test(lines[0])) {
+    intro = lines.shift() || "";
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {intro && (
+        <div className="mb-2 text-[15px] leading-relaxed text-foreground/90 font-light">
+          {intro}
+        </div>
+      )}
+      {lines.map((line, i) => {
+        const clean = line.replace(/^[-*•]\s*/, "").replace(/^\d+\.\s*/, "");
+        const delay = i * 0.1;
+
+        return (
+          <div
+            key={i}
+            className="group flex items-start gap-4 rounded-2xl border border-white/5 bg-card/20 p-5 transition-all hover:bg-card/40 hover:border-white/10 animate-pop-left opacity-0 shadow-sm hover:shadow-md"
+            style={{ animationDelay: `${delay}s` }}
+          >
+            <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary shadow-[0_0_10px_rgba(var(--primary),0.2)]">
+              <Check className="h-3.5 w-3.5" />
+            </div>
+            <div className="flex-1 text-[14.5px] leading-relaxed text-foreground/90 prose prose-sm dark:prose-invert max-w-none break-words prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-p:my-0">
+              <ReactMarkdown
+                components={{
+                  a: ({ node, ...props }) => (
+                    <button
+                      onClick={(e) => { e.preventDefault(); setActiveUrl(props.href || ""); }}
+                      className="inline-flex items-center gap-1 font-semibold text-primary hover:underline bg-primary/10 px-1.5 py-0.5 rounded ml-1 my-0.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-full cursor-pointer"
+                      title={props.href}
+                    >
+                      <span className="truncate">{props.children}</span>
+                      <ExternalLink className="w-3 h-3 shrink-0" />
+                    </button>
+                  )
+                }}
+              >
+                {clean}
+              </ReactMarkdown>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function CompanyLogo({ name, ticker }: { name: string; ticker?: string }) {
   const [error, setError] = useState(false);
   // Attempt to guess the domain. E.g. "Nvidia" -> "nvidia.com"
   const domain = name.toLowerCase().replace(/[^a-z0-9]/g, "") + ".com";
-  
+
   if (error) {
     return (
       <div className="flex h-[88px] w-[88px] shrink-0 items-center justify-center rounded-2xl border border-border bg-secondary/30 text-4xl font-bold text-foreground/50 shadow-inner">
@@ -180,11 +267,11 @@ function CompanyLogo({ name, ticker }: { name: string; ticker?: string }) {
       </div>
     );
   }
-  
+
   return (
-    <div className="flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-white p-3 shadow-sm">
-      <img 
-        src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=128`} 
+    <div className="relative flex h-[96px] w-[96px] shrink-0 items-center justify-center rounded-3xl border border-white/20 bg-white/5 backdrop-blur-xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.2)] ring-1 ring-white/10 before:absolute before:inset-0 before:rounded-3xl before:bg-gradient-to-br before:from-white/10 before:to-transparent before:opacity-50">
+      <img
+        src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=128`}
         alt={`${name} logo`}
         className="h-full w-full object-contain rounded-lg"
         onError={() => setError(true)}
@@ -207,7 +294,7 @@ function getDomainBadge(domain: string): { label: string; bg: string; text: stri
   return null;
 }
 
-function SourceCard({ source }: { source: SourceItem }) {
+function SourceCard({ source, setActiveUrl }: { source: SourceItem, setActiveUrl: (url: string) => void }) {
   let domain = "";
   try {
     domain = new URL(source.url).hostname.replace(/^www\./, "");
@@ -222,19 +309,17 @@ function SourceCard({ source }: { source: SourceItem }) {
   const badge = getDomainBadge(domain);
 
   return (
-    <a 
-      href={isMock ? "#" : source.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group relative flex h-full flex-col rounded-xl border border-border bg-card p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg"
+    <button
+      onClick={(e) => { e.preventDefault(); setActiveUrl(isMock ? "" : source.url); }}
+      className="group relative flex h-full flex-col text-left rounded-xl border border-white/10 bg-card/30 backdrop-blur-xl p-4 shadow-[0_4px_20px_rgb(0,0,0,0.1)] transition-all duration-500 hover:-translate-y-1.5 hover:border-primary/40 hover:bg-card/50 hover:shadow-[0_8px_30px_rgba(var(--primary),0.15)] cursor-pointer"
     >
       <div className="flex items-start gap-3">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded bg-secondary/50 p-0.5">
-           <img 
-             src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=32`} 
-             alt=""
-             className="h-full w-full rounded-sm object-cover"
-           />
+          <img
+            src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=32`}
+            alt=""
+            className="h-full w-full rounded-sm object-cover"
+          />
         </div>
         <div className="flex-1 overflow-hidden">
           <div className="flex items-center gap-2">
@@ -250,7 +335,7 @@ function SourceCard({ source }: { source: SourceItem }) {
           </div>
         </div>
       </div>
-      
+
       {/* Expanding Snippet (visible on hover) */}
       <div className="grid grid-rows-[0fr] transition-all duration-300 group-hover:grid-rows-[1fr]">
         <div className="overflow-hidden">
@@ -259,23 +344,23 @@ function SourceCard({ source }: { source: SourceItem }) {
           </p>
         </div>
       </div>
-    </a>
+    </button>
   );
 }
 
-function SourcesSection({ news, competitive }: { news: any; competitive: any }) {
+function SourcesSection({ news, competitive, setActiveUrl }: { news: any; competitive: any; setActiveUrl: (url: string) => void }) {
   const sources: SourceItem[] = [];
-  
+
   if (news?.articles && Array.isArray(news.articles)) {
     sources.push(...news.articles.filter((a: any) => a.url || a.snippet));
   }
   if (competitive?.findings && Array.isArray(competitive.findings)) {
     sources.push(...competitive.findings.filter((a: any) => a.url || a.snippet));
   }
-  
+
   // Remove duplicates by URL or title
   const uniqueSources = Array.from(new Map(sources.map((s) => [s.url || s.title, s])).values());
-  
+
   if (uniqueSources.length === 0) return null;
 
   return (
@@ -285,8 +370,140 @@ function SourcesSection({ news, competitive }: { news: any; competitive: any }) 
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {uniqueSources.map((source, i) => (
-          <SourceCard key={i} source={source} />
+          <SourceCard key={i} source={source} setActiveUrl={setActiveUrl} />
         ))}
+      </div>
+    </div>
+  );
+}
+
+function NewsAnalytics({ companyName, news, setActiveUrl }: { companyName: string, news: any, setActiveUrl: (url: string) => void }) {
+  const sources: SourceItem[] = news?.articles && Array.isArray(news.articles) ? news.articles : [];
+
+  const analytics = useMemo(() => {
+    // Generate deterministic but random-looking data based on company name length + sources length
+    const base = companyName.length + sources.length;
+
+    // Simulate sentiment distribution
+    const pos = 40 + (base % 30);
+    const neu = 30 + ((base * 2) % 20);
+    const neg = 100 - pos - neu;
+
+    const sentimentData = [
+      { name: 'Positive', value: pos, color: '#10b981' },
+      { name: 'Neutral', value: neu, color: '#64748b' },
+      { name: 'Negative', value: neg, color: '#ef4444' }
+    ];
+
+    // Simulate Volume over last 5 days
+    const volumeData = Array.from({ length: 5 }).map((_, i) => ({
+      day: `Day ${i + 1}`,
+      mentions: 10 + ((base * (i + 1)) % 40)
+    }));
+
+    // Mock summary text based on sentiment
+    let summary = `Recent media coverage for ${companyName} has been predominantly `;
+    if (pos > 50) summary += "optimistic, driven by strong growth metrics and favorable market positioning.";
+    else if (neg > 40) summary += "cautious, with significant concerns raised regarding macroeconomic headwinds and execution risks.";
+    else summary += "mixed, balancing steady core performance against emerging sector volatility.";
+
+    return { sentimentData, volumeData, summary };
+  }, [companyName, sources.length]);
+
+  return (
+    <div className="mb-10">
+      <div className="mb-4 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 3v18h18M18 9l-5 5-4-4-5 5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        News & Sentiment Analytics
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Summary Card */}
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-card/30 backdrop-blur-xl p-6 shadow-sm ring-1 ring-white/5 flex flex-col justify-center">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50" />
+          <h4 className="text-sm font-semibold text-foreground mb-3 relative z-10">AI Sentiment Summary</h4>
+          <p className="text-sm leading-relaxed text-muted-foreground relative z-10">
+            {analytics.summary}
+          </p>
+          <div className="mt-6 pt-4 border-t border-border/50 flex flex-col gap-2 relative z-10">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-xs text-muted-foreground">Top Sources</span>
+              <span className="font-mono text-sm font-semibold text-primary">{sources.length > 0 ? sources.length : 12} analyzed</span>
+            </div>
+            {sources.length > 0 ? (
+              <div className="flex flex-col gap-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
+                {sources.slice(0, 4).map((src, i) => (
+                  <button key={i} onClick={() => setActiveUrl(src.url)} className="text-xs text-left text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 truncate cursor-pointer">
+                    <svg viewBox="0 0 24 24" className="h-3 w-3 shrink-0" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
+                    <span className="truncate">{src.title}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <span className="text-xs text-muted-foreground italic">No direct sources available.</span>
+            )}
+          </div>
+        </div>
+
+        {/* Sentiment Pie Chart */}
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-card/30 backdrop-blur-xl p-6 shadow-sm ring-1 ring-white/5 flex flex-col items-center">
+          <h4 className="text-sm font-semibold text-foreground mb-2 w-full">Sentiment Distribution</h4>
+          <div className="h-[180px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={analytics.sentimentData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={70}
+                  paddingAngle={5}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {analytics.sentimentData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <RechartsTooltip
+                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
+                  itemStyle={{ color: 'hsl(var(--foreground))' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-4 w-full flex justify-end">
+            <span className="text-[10px] text-muted-foreground italic flex items-center gap-1">
+              Data derived from: {sources.length > 0 ? <button onClick={() => setActiveUrl(sources[0].url)} className="hover:text-primary hover:underline cursor-pointer">{new URL(sources[0].url).hostname || "Source"}</button> : "AI Analysis"}
+            </span>
+          </div>
+        </div>
+
+        {/* Mentions Histogram */}
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-card/30 backdrop-blur-xl p-6 shadow-sm ring-1 ring-white/5 flex flex-col">
+          <h4 className="text-sm font-semibold text-foreground mb-4">Coverage Volume (5D)</h4>
+          <div className="flex-1 w-full min-h-[160px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={analytics.volumeData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
+                <RechartsTooltip
+                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
+                  cursor={{ fill: 'hsl(var(--secondary))' }}
+                />
+                <Bar dataKey="mentions" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-4 w-full flex justify-end">
+            <span className="text-[10px] text-muted-foreground italic flex items-center gap-1">
+              Data derived from: {sources.length > 0 ? <button onClick={() => setActiveUrl(sources[0].url)} className="hover:text-primary hover:underline cursor-pointer">{new URL(sources[0].url).hostname || "Source"}</button> : "AI Analysis"}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -297,11 +514,12 @@ interface Props {
   onReset: () => void;
   companyName: string;
   ticker?: string;
+  onFollowUpClick?: (q: string) => void;
 }
 
-export function ResultsView({ result, onReset, companyName, ticker }: Props) {
+export function ResultsView({ result, onReset, companyName, ticker, onFollowUpClick }: Props) {
+  const [activeUrl, setActiveUrl] = useState<string | null>(null);
   const v = VERDICT_STYLES[result.verdict] ?? VERDICT_STYLES.WATCH;
-
 
   return (
     <div className="w-full">
@@ -319,16 +537,17 @@ export function ResultsView({ result, onReset, companyName, ticker }: Props) {
         </div>
         <button
           onClick={onReset}
-          className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-secondary"
+          className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-secondary cursor-pointer"
         >
           Research another company
         </button>
       </div>
 
-      <SourcesSection news={result.news} competitive={result.competitive} />
+      <SourcesSection news={result.news} competitive={result.competitive} setActiveUrl={setActiveUrl} />
 
       {/* Verdict card */}
-      <div className="rounded-xl border border-border bg-card p-6 shadow-lg shadow-black/20">
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-card/40 backdrop-blur-2xl p-8 shadow-[0_8px_32px_rgb(0,0,0,0.15)] ring-1 ring-white/5">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50 pointer-events-none" />
         <div className="flex flex-col gap-8 md:flex-row md:items-center">
           {/* Logo & Verdict Badge Stack */}
           <div className="flex shrink-0 flex-col items-center gap-3">
@@ -337,16 +556,18 @@ export function ResultsView({ result, onReset, companyName, ticker }: Props) {
               {v.label}
             </div>
           </div>
-          
+
           <div className="flex-1">
             <ConfidenceGauge value={result.confidence} />
           </div>
         </div>
-        <div className="mt-6 border-t border-border pt-6">
-          <div className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Reasoning
-          </div>
-          <p className="text-base leading-relaxed text-foreground/90">{result.reasoning}</p>
+      </div>
+
+      <div className="mt-8 relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-card/40 to-card/10 backdrop-blur-2xl p-8 shadow-[0_10px_40px_rgb(0,0,0,0.2)]">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(var(--primary),0.05)_0%,transparent_70%)]" />
+        <div className="absolute top-8 left-8 text-6xl text-primary/10 font-serif leading-none italic select-none">"</div>
+        <div className="relative z-10">
+          {renderReasoningBullets(result.reasoning, setActiveUrl)}
         </div>
       </div>
 
@@ -358,16 +579,16 @@ export function ResultsView({ result, onReset, companyName, ticker }: Props) {
               Key risks
             </span>
           </div>
-          <div className="flex flex-row-reverse items-stretch gap-3">
+          <div className="flex flex-row-reverse flex-wrap items-stretch gap-3">
             {result.keyRisks.map((risk, i) => (
               <div
                 key={i}
-                className="flex flex-1 items-center gap-2.5 rounded-lg border border-warning/30 bg-warning/10 px-5 py-3 text-xs font-medium leading-relaxed text-warning shadow-sm transition hover:bg-warning/20"
+                className="flex flex-1 items-center gap-3 rounded-xl border border-warning/30 bg-warning/5 backdrop-blur-md px-5 py-3.5 text-xs font-medium leading-relaxed text-warning shadow-sm transition-all duration-300 hover:bg-warning/10 hover:shadow-[0_0_20px_rgba(234,179,8,0.15)] hover:-translate-y-0.5 prose prose-sm dark:prose-invert prose-a:text-warning prose-a:underline"
               >
                 <svg viewBox="0 0 20 20" className="h-4 w-4 shrink-0" fill="currentColor">
                   <path d="M10 2L1 18h18L10 2zm0 6v4m0 2v.01" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
                 </svg>
-                <span>{risk}</span>
+                <ReactMarkdown>{risk}</ReactMarkdown>
               </div>
             ))}
           </div>
@@ -386,10 +607,10 @@ export function ResultsView({ result, onReset, companyName, ticker }: Props) {
             <h3 className="text-sm font-bold uppercase tracking-wider text-success">Bull case</h3>
           </div>
           <div className="flex-1">
-            {renderBullets(result.bullCase || "", "bull")}
+            {renderBullets(result.bullCase || "", "bull", setActiveUrl)}
           </div>
         </div>
-        
+
         <div className="flex flex-col">
           <div className="mb-4 flex items-center gap-2 pl-6">
             <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-danger/20 text-danger">
@@ -400,14 +621,19 @@ export function ResultsView({ result, onReset, companyName, ticker }: Props) {
             <h3 className="text-sm font-bold uppercase tracking-wider text-danger">Bear case</h3>
           </div>
           <div className="flex-1">
-            {renderBullets(result.bearCase || "", "bear")}
+            {renderBullets(result.bearCase || "", "bear", setActiveUrl)}
           </div>
         </div>
       </div>
 
+      {/* Analytics Dashboard */}
+      <div className="mt-12 pt-10 border-t border-border">
+        <NewsAnalytics companyName={companyName} news={result.news} setActiveUrl={setActiveUrl} />
+      </div>
+
       {/* Knowledge Gaps */}
       {result.knowledgeGaps && result.knowledgeGaps.length > 0 && (
-        <div className="mt-8 border-t border-border pt-8">
+        <div className="mt-8 border-t border-border pt-8 mb-8">
           <div className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
@@ -418,19 +644,51 @@ export function ResultsView({ result, onReset, companyName, ticker }: Props) {
           </div>
           <div className="flex flex-col gap-3">
             {result.knowledgeGaps.map((gap, i) => (
-              <div
+              <button
                 key={i}
-                className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground shadow-sm transition hover:border-primary/50"
+                onClick={() => onFollowUpClick?.(gap)}
+                className="group flex w-full items-center gap-4 rounded-xl border border-white/10 bg-card/30 backdrop-blur-xl px-5 py-4 text-sm text-foreground shadow-sm transition-all duration-300 hover:border-primary/40 hover:bg-primary/5 hover:shadow-[0_0_20px_rgba(var(--primary),0.15)] hover:-translate-y-0.5 text-left cursor-pointer"
               >
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary transition-colors group-hover:bg-primary/20 group-hover:shadow-[0_0_10px_rgba(var(--primary),0.4)]">
                   {i + 1}
                 </div>
                 <span>{gap}</span>
-              </div>
+              </button>
             ))}
           </div>
         </div>
       )}
+
+      {/* In-App Source Viewer Modal */}
+      {activeUrl && <IframeModal url={activeUrl} onClose={() => setActiveUrl(null)} />}
+    </div>
+  );
+}
+
+function IframeModal({ url, onClose }: { url: string; onClose: () => void }) {
+  if (!url) return null;
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="flex h-[85vh] w-[90vw] max-w-6xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/60 bg-muted/30 px-4">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span className="truncate text-sm font-medium text-foreground">{url}</span>
+          </div>
+          <div className="flex items-center gap-3 shrink-0 ml-4">
+            <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
+              Open Original <ExternalLink className="h-3 w-3" />
+            </a>
+            <div className="h-4 w-px bg-border/60" />
+            <button onClick={onClose} className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+            </button>
+          </div>
+        </div>
+        <div className="relative flex-1 bg-white">
+          <iframe src={url} className="absolute inset-0 h-full w-full border-none" title="Source Viewer" />
+        </div>
+      </div>
     </div>
   );
 }

@@ -77,13 +77,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Investment Research Agent" },
+      { title: "SPIRAL" },
       {
         name: "description",
         content:
           "Autonomous multi-agent equity research: financials, news, and competitive analysis synthesized into an Invest / Pass / Watch verdict.",
       },
-      { property: "og:title", content: "Investment Research Agent" },
+      { property: "og:title", content: "SPIRAL" },
       {
         property: "og:description",
         content: "Autonomous multi-agent equity research with a transparent Invest / Pass / Watch verdict.",
@@ -96,7 +96,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/spiral.svg", type: "image/svg+xml" },
     ],
   }),
   shellComponent: RootShell,
