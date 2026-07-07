@@ -227,11 +227,13 @@ function renderBullets(text: string, type: "bull" | "bear", setActiveUrl: (url: 
   );
 }
 
-function renderReasoningBullets(text: string, setActiveUrl: (url: string) => void) {
-  let lines = text
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
+function renderReasoningBullets(text: string | string[], setActiveUrl: (url: string) => void) {
+  let lines = Array.isArray(text)
+    ? text
+    : (text || "")
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean);
 
   const hasBullets = lines.some((l) => /^[-*•]/.test(l) || /^\d+\./.test(l));
 

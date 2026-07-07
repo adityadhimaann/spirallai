@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Plus, Search, Menu, History } from "lucide-react";
+import { MessageSquare, Plus, Search, Menu, History, Sun, Moon } from "lucide-react";
 import type { ChatSession } from "@/lib/research-types";
 
 interface Props {
@@ -10,6 +10,18 @@ interface Props {
 }
 
 export function SidebarLeft({ sessions, activeSessionId, onSelectSession, onNewChat }: Props) {
+  const [isLightMode, setIsLightMode] = useState(false);
+
+  const toggleTheme = () => {
+    const root = document.documentElement;
+    if (isLightMode) {
+      root.classList.remove("light");
+    } else {
+      root.classList.add("light");
+    }
+    setIsLightMode(!isLightMode);
+  };
+
   return (
     <aside className="absolute left-0 top-0 bottom-0 z-50 flex h-full shrink-0 flex-col border-r border-border/60 bg-background/95 backdrop-blur-xl transition-all duration-300 ease-in-out w-[68px] hover:w-64 group shadow-[4px_0_24px_rgba(0,0,0,0.1)]">
       {/* Header section */}
@@ -96,6 +108,25 @@ export function SidebarLeft({ sessions, activeSessionId, onSelectSession, onNewC
             ))
           )}
         </div>
+      </div>
+
+      {/* Footer / Settings */}
+      <div className="p-3 border-t border-border/60 shrink-0">
+        <button
+          onClick={toggleTheme}
+          className="group/btn relative flex h-11 w-full items-center gap-3 overflow-hidden rounded-lg px-3 transition-colors text-muted-foreground hover:bg-secondary/50 hover:text-foreground cursor-pointer"
+        >
+          <div className="absolute left-[16px] flex items-center justify-center">
+            {isLightMode ? (
+              <Moon className="h-5 w-5 shrink-0" />
+            ) : (
+              <Sun className="h-5 w-5 shrink-0" />
+            )}
+          </div>
+          <span className="ml-8 text-sm font-medium opacity-0 transition-opacity duration-300 group-hover:opacity-100 whitespace-nowrap">
+            {isLightMode ? "Dark Mode" : "Light Mode"}
+          </span>
+        </button>
       </div>
     </aside>
   );

@@ -4,7 +4,7 @@ export type Verdict =
 export interface ResearchResult {
   verdict: Verdict;
   confidence: number; // 0-100
-  reasoning: string;
+  reasoning: string | string[];
   keyRisks: string[];
   knowledgeGaps?: string[];
   bullCase: string;
