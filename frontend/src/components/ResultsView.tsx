@@ -373,27 +373,49 @@ function renderBullets(text: string, type: "bull" | "bear", setActiveUrl: (url: 
 function renderComprehensiveReport(text: string | string[], setActiveUrl: (url: string) => void) {
   const content = Array.isArray(text) ? text.join("\n\n") : (text || "");
   
+  // Split the markdown by sections (headers or numbered lists at start of line)
+  let blocks = content.split(/(?=^#{1,4}\s+.*$|^\d+\.\s+[A-Z].*$)/m).filter(b => b.trim().length > 0);
+  
+  // If no headers found, fallback to splitting by paragraph
+  if (blocks.length <= 1) {
+    blocks = content.split(/\n\n+/).filter(b => b.trim().length > 0);
+  }
+
   return (
-    <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-table:border-collapse prose-th:border-b prose-th:border-white/10 prose-th:pb-2 prose-td:py-2 prose-p:leading-relaxed prose-li:leading-relaxed">
-      <ReactMarkdown
-        components={{
-          a: ({ node, ...props }) => (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                setActiveUrl(props.href || "");
-              }}
-              className="inline-flex items-center gap-1 font-semibold text-primary hover:underline bg-primary/10 px-1.5 py-0.5 rounded mx-1 whitespace-nowrap overflow-hidden text-ellipsis max-w-full cursor-pointer align-baseline"
-              title={props.href}
-            >
-              <span className="truncate">{props.children}</span>
-              <ExternalLink className="w-3 h-3 shrink-0" />
-            </button>
-          ),
-        }}
-      >
-        {content}
-      </ReactMarkdown>
+    <div className="mt-8 flex flex-col gap-6">
+      {blocks.map((block, i) => {
+        const delay = i * 0.1;
+        return (
+          <div
+            key={i}
+            className="group relative overflow-hidden rounded-3xl border border-white/10 bg-card/30 backdrop-blur-xl p-6 lg:p-8 transition-all duration-300 hover:bg-card/40 shadow-sm hover:shadow-md animate-pop-left opacity-0"
+            style={{ animationDelay: `${delay}s`, animationFillMode: "forwards" }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="relative z-10 prose prose-sm md:prose-base dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-headings:mt-0 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-table:border-collapse prose-th:border-b prose-th:border-white/10 prose-th:pb-2 prose-td:py-2 prose-p:leading-relaxed prose-li:leading-relaxed prose-p:last:mb-0">
+              <ReactMarkdown
+                components={{
+                  a: ({ node, ...props }) => (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setActiveUrl(props.href || "");
+                      }}
+                      className="inline-flex items-center gap-1 font-semibold text-primary hover:underline bg-primary/10 px-1.5 py-0.5 rounded mx-1 whitespace-nowrap overflow-hidden text-ellipsis max-w-full cursor-pointer align-baseline"
+                      title={props.href}
+                    >
+                      <span className="truncate">{props.children}</span>
+                      <ExternalLink className="w-3 h-3 shrink-0" />
+                    </button>
+                  ),
+                }}
+              >
+                {block.trim()}
+              </ReactMarkdown>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -839,11 +861,7 @@ export function ResultsView({ result, onReset, companyName, ticker, onFollowUpCl
         {result.financialHealth && <FinancialHealthTable data={result.financialHealth} />}
       </div>
 
-      <div className="mt-8 relative overflow-hidden rounded-3xl border border-white/10 bg-card/20 backdrop-blur-2xl p-8 lg:p-10 shadow-[0_8px_32px_rgb(0,0,0,0.1)]">
-        <div className="relative z-10">
-          {renderComprehensiveReport(result.reasoning, setActiveUrl)}
-        </div>
-      </div>
+      {renderComprehensiveReport(result.reasoning, setActiveUrl)}
 
       {/* Key risks */}
       {result.keyRisks?.length > 0 && (
