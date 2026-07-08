@@ -14,6 +14,15 @@ import {
   CartesianGrid,
 } from "recharts";
 import type { ResearchResult, Verdict } from "@/lib/research-types";
+
+function safeGetHostname(url: string) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "") || "Source";
+  } catch {
+    return "Source";
+  }
+}
+
 const VERDICT_STYLES: Record<string, { bg: string; text: string; label: string }> = {
   "STRONG BUY": { bg: "bg-success", text: "text-success-foreground", label: "STRONG BUY" },
   BUY: { bg: "bg-success", text: "text-success-foreground", label: "BUY" },
@@ -365,16 +374,10 @@ function SourceCard({
   source: SourceItem;
   setActiveUrl: (url: string) => void;
 }) {
-  let domain = "";
-  try {
-    domain = new URL(source.url).hostname.replace(/^www\./, "");
-  } catch {
-    domain = source.url;
-  }
+  const domain = safeGetHostname(source.url);
 
   // Fallback for mock URLs without protocol
   const isMock = !source.url.startsWith("http");
-  if (isMock) domain = "mock-source.com";
 
   const badge = getDomainBadge(domain);
 
@@ -616,7 +619,7 @@ function NewsAnalytics({
                   onClick={() => setActiveUrl(sources[0].url)}
                   className="hover:text-primary hover:underline cursor-pointer"
                 >
-                  {new URL(sources[0].url).hostname || "Source"}
+                  {safeGetHostname(sources[0].url)}
                 </button>
               ) : (
                 "AI Analysis"
@@ -668,7 +671,7 @@ function NewsAnalytics({
                   onClick={() => setActiveUrl(sources[0].url)}
                   className="hover:text-primary hover:underline cursor-pointer"
                 >
-                  {new URL(sources[0].url).hostname || "Source"}
+                  {safeGetHostname(sources[0].url)}
                 </button>
               ) : (
                 "AI Analysis"
