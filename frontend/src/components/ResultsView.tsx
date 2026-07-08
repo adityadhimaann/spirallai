@@ -709,11 +709,11 @@ function NewsAnalytics({
                 </Pie>
                 <RechartsTooltip
                   contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    borderColor: "hsl(var(--border))",
+                    backgroundColor: "var(--card)",
+                    borderColor: "var(--border)",
                     borderRadius: "8px",
                   }}
-                  itemStyle={{ color: "hsl(var(--foreground))" }}
+                  itemStyle={{ color: "var(--foreground)" }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -744,29 +744,29 @@ function NewsAnalytics({
                 data={analytics.volumeData}
                 margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                 <XAxis
                   dataKey="day"
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   fontSize={11}
                   tickLine={false}
                   axisLine={false}
                 />
                 <YAxis
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   fontSize={11}
                   tickLine={false}
                   axisLine={false}
                 />
                 <RechartsTooltip
                   contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    borderColor: "hsl(var(--border))",
+                    backgroundColor: "var(--card)",
+                    borderColor: "var(--border)",
                     borderRadius: "8px",
                   }}
-                  cursor={{ fill: "hsl(var(--secondary))" }}
+                  cursor={{ fill: "var(--secondary)" }}
                 />
-                <Bar dataKey="mentions" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="mentions" fill="var(--primary)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
