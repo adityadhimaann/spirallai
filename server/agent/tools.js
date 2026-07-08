@@ -18,14 +18,41 @@ export async function fetchFinancials(companyName, ticker) {
     if (!data || !data.Symbol) return mockFinancials(companyName, ticker);
     return {
       source: "alphavantage",
+      isMock: false,
       symbol: data.Symbol,
-      peRatio: data.PERatio,
-      marketCap: data.MarketCapitalization,
-      revenueTTM: data.RevenueTTM,
-      profitMargin: data.ProfitMargin,
-      debtToEquity: data.DebtToEquity ?? "n/a",
+      name: data.Name || companyName,
       sector: data.Sector,
+      industry: data.Industry,
       description: data.Description,
+      // Core financials
+      marketCap: data.MarketCapitalization || "Not disclosed.",
+      enterpriseValue: data.EVToRevenue ? "Derived" : "Not disclosed.",
+      revenueTTM: data.RevenueTTM || "Not disclosed.",
+      grossProfitTTM: data.GrossProfitTTM || "Not disclosed.",
+      ebitda: data.EBITDA || "Not disclosed.",
+      peRatio: data.PERatio || "Not disclosed.",
+      forwardPE: data.ForwardPE || "Not disclosed.",
+      pegRatio: data.PEGRatio || "Not disclosed.",
+      profitMargin: data.ProfitMargin || "Not disclosed.",
+      operatingMarginTTM: data.OperatingMarginTTM || "Not disclosed.",
+      eps: data.EPS || "Not disclosed.",
+      quarterlyEarningsGrowthYOY: data.QuarterlyEarningsGrowthYOY || "Not disclosed.",
+      quarterlyRevenueGrowthYOY: data.QuarterlyRevenueGrowthYOY || "Not disclosed.",
+      // Balance sheet
+      bookValue: data.BookValue || "Not disclosed.",
+      debtToEquity: data.DebtToEquity ?? "Not disclosed.",
+      // Shares & ownership
+      sharesOutstanding: data.SharesOutstanding || "Not disclosed.",
+      beta: data.Beta || "Not disclosed.",
+      dividendYield: data.DividendYield || "Not disclosed.",
+      // Targets
+      analystTargetPrice: data.AnalystTargetPrice || "Not disclosed.",
+      analystRatingStrongBuy: data.AnalystRatingStrongBuy || "Not disclosed.",
+      analystRatingBuy: data.AnalystRatingBuy || "Not disclosed.",
+      analystRatingHold: data.AnalystRatingHold || "Not disclosed.",
+      analystRatingSell: data.AnalystRatingSell || "Not disclosed.",
+      week52High: data["52WeekHigh"] || "Not disclosed.",
+      week52Low: data["52WeekLow"] || "Not disclosed.",
     };
   } catch (err) {
     return mockFinancials(companyName, ticker, err.message);
@@ -103,14 +130,15 @@ export async function fetchCompetitive(companyName, isDeepMode) {
 function mockFinancials(companyName, ticker, errNote) {
   return {
     source: errNote ? `mock (alphavantage error: ${errNote})` : "mock (no ALPHAVANTAGE_API_KEY set)",
+    isMock: true,
     symbol: ticker || companyName.toUpperCase().slice(0, 4),
-    peRatio: "24.3",
-    marketCap: "58200000000",
-    revenueTTM: "9800000000",
-    profitMargin: "0.14",
-    debtToEquity: "0.6",
-    sector: "Technology",
-    description: `Mock fundamentals for ${companyName}. Set ALPHAVANTAGE_API_KEY for live data.`,
+    description: `⚠️ MOCK DATA — These are placeholder fundamentals for ${companyName}. DO NOT use these numbers for analysis, valuation, or any financial conclusions. Set ALPHAVANTAGE_API_KEY for live data.`,
+    peRatio: "Not disclosed.",
+    marketCap: "Not disclosed.",
+    revenueTTM: "Not disclosed.",
+    profitMargin: "Not disclosed.",
+    debtToEquity: "Not disclosed.",
+    sector: "Unknown",
   };
 }
 

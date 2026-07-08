@@ -13,7 +13,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import type { ResearchResult, Verdict } from "@/lib/research-types";
+import type { ResearchResult, Verdict, ScoreBreakdown, FinancialHealth } from "@/lib/research-types";
 
 function safeGetHostname(url: string) {
   try {
@@ -35,7 +35,7 @@ const VERDICT_STYLES: Record<string, { bg: string; text: string; label: string }
   WATCH: { bg: "bg-warning", text: "text-warning-foreground", label: "WATCH" },
 };
 
-function ConfidenceGauge({ value }: { value: number }) {
+function ConfidenceGauge({ value, explanation }: { value: number; explanation?: string }) {
   const v = Math.max(0, Math.min(100, value));
   return (
     <div className="w-full">
@@ -54,6 +54,140 @@ function ConfidenceGauge({ value }: { value: number }) {
           style={{ width: `${v}%` }}
         />
       </div>
+      {explanation && (
+        <p className="mt-2 text-xs text-muted-foreground leading-relaxed italic">{explanation}</p>
+      )}
+    </div>
+  );
+}
+
+const SCORE_LABELS: Record<string, { label: string; icon: string }> = {
+  growth: { label: "Growth", icon: "📈" },
+  profitability: { label: "Profitability", icon: "💰" },
+  balanceSheet: { label: "Balance Sheet", icon: "🏦" },
+  valuation: { label: "Valuation", icon: "📊" },
+  competitivePosition: { label: "Competitive Position", icon: "🏆" },
+  execution: { label: "Execution", icon: "⚡" },
+  risk: { label: "Risk", icon: "⚠️" },
+};
+
+function VerdictScorecard({ scores }: { scores: ScoreBreakdown }) {
+  const entries = Object.entries(scores).filter(([_, v]) => v !== null && v !== undefined) as [string, number][];
+  const overall = entries.length > 0
+    ? (entries.reduce((sum, [_, v]) => sum + v, 0) / entries.length).toFixed(1)
+    : "N/A";
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-card/30 backdrop-blur-xl p-6 shadow-sm ring-1 ring-white/5">
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Investment Scorecard</h3>
+        <div className="flex items-baseline gap-1">
+          <span className="font-mono text-xl font-bold text-foreground">{overall}</span>
+          <span className="text-xs text-muted-foreground">/10</span>
+        </div>
+      </div>
+      <div className="flex flex-col gap-3">
+        {Object.entries(SCORE_LABELS).map(([key, { label, icon }]) => {
+          const val = scores[key as keyof ScoreBreakdown];
+          const isNull = val === null || val === undefined;
+          const numVal = isNull ? 0 : (val as number);
+          const color = numVal >= 8 ? "bg-success" : numVal >= 5 ? "bg-primary" : "bg-danger";
+
+          return (
+            <div key={key} className="flex items-center gap-3">
+              <span className="text-sm w-5 text-center">{icon}</span>
+              <span className="text-xs font-medium text-foreground w-36 truncate">{label}</span>
+              <div className="flex-1 h-2 overflow-hidden rounded-full bg-secondary/50">
+                {!isNull && (
+                  <div
+                    className={`h-full rounded-full ${color} transition-all duration-700`}
+                    style={{ width: `${numVal * 10}%` }}
+                  />
+                )}
+              </div>
+              <span className="font-mono text-xs font-semibold tabular-nums text-foreground w-8 text-right">
+                {isNull ? "N/A" : `${numVal}/10`}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+const FINANCIAL_HEALTH_LABELS: Record<string, string> = {
+  revenue: "Revenue (TTM)",
+  revenueGrowth: "Revenue Growth (YoY)",
+  grossMargin: "Gross Margin",
+  operatingMargin: "Operating Margin",
+  gaapNetIncome: "GAAP Net Income",
+  eps: "EPS",
+  freeCashFlow: "Free Cash Flow",
+  cash: "Cash & Equivalents",
+  totalDebt: "Total Debt",
+  sbc: "Stock-Based Compensation",
+  sharesOutstanding: "Shares Outstanding",
+  customerGrowth: "Customer Growth",
+  enterpriseValue: "Enterprise Value",
+  marketCap: "Market Capitalization",
+};
+
+function FinancialHealthTable({ data }: { data: FinancialHealth }) {
+  const entries = Object.entries(FINANCIAL_HEALTH_LABELS);
+  // Only show if we have at least one non-empty value
+  const hasData = entries.some(([key]) => {
+    const val = data[key as keyof FinancialHealth];
+    return val && val !== "Not disclosed.";
+  });
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-card/30 backdrop-blur-xl p-6 shadow-sm ring-1 ring-white/5">
+      <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-5">Financial Health</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1">
+        {entries.map(([key, label]) => {
+          const val = data[key as keyof FinancialHealth] || "Not disclosed.";
+          const isUndisclosed = val === "Not disclosed.";
+          return (
+            <div key={key} className="flex items-center justify-between py-2 border-b border-white/5 last:border-b-0">
+              <span className="text-xs text-muted-foreground">{label}</span>
+              <span className={`text-xs font-mono font-medium ${isUndisclosed ? "text-muted-foreground/50 italic" : "text-foreground"}`}>
+                {val}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      {!hasData && (
+        <p className="mt-4 text-xs text-muted-foreground italic text-center">
+          No verified financial data available. Set ALPHAVANTAGE_API_KEY for live data.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function DataQualityAlerts({ notes }: { notes: string[] }) {
+  if (!notes || notes.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-2 mb-6">
+      {notes.map((note, i) => (
+        <div
+          key={i}
+          className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/5 backdrop-blur-md px-5 py-3.5 text-xs font-medium leading-relaxed text-warning shadow-sm"
+        >
+          <svg viewBox="0 0 20 20" className="h-4 w-4 shrink-0 mt-0.5" fill="currentColor">
+            <path
+              d="M10 2L1 18h18L10 2zm0 6v4m0 2v.01"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              fill="none"
+              strokeLinecap="round"
+            />
+          </svg>
+          <span>{note}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -726,6 +860,9 @@ export function ResultsView({ result, onReset, companyName, ticker, onFollowUpCl
         setActiveUrl={setActiveUrl}
       />
 
+      {/* Data Quality Alerts */}
+      <DataQualityAlerts notes={result.dataQualityNotes || []} />
+
       {/* Verdict card */}
       <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-card/40 backdrop-blur-2xl p-8 shadow-[0_8px_32px_rgb(0,0,0,0.15)] ring-1 ring-white/5">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50 pointer-events-none" />
@@ -741,9 +878,14 @@ export function ResultsView({ result, onReset, companyName, ticker, onFollowUpCl
           </div>
 
           <div className="flex-1">
-            <ConfidenceGauge value={result.confidence} />
+            <ConfidenceGauge value={result.confidence} explanation={result.confidenceExplanation} />
           </div>
         </div>
+      </div>
+
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {result.scoreBreakdown && <VerdictScorecard scores={result.scoreBreakdown} />}
+        {result.financialHealth && <FinancialHealthTable data={result.financialHealth} />}
       </div>
 
       <div className="mt-8 relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-card/40 to-card/10 backdrop-blur-2xl p-8 shadow-[0_10px_40px_rgb(0,0,0,0.2)]">

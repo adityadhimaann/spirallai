@@ -4,7 +4,11 @@ const researchResultSchema = new mongoose.Schema({
   company: { type: String, required: true, unique: true }, // The key to look up
   verdict: { type: String },
   confidence: { type: Number },
+  confidenceExplanation: { type: String },
   reasoning: { type: mongoose.Schema.Types.Mixed },
+  scoreBreakdown: { type: mongoose.Schema.Types.Mixed },
+  financialHealth: { type: mongoose.Schema.Types.Mixed },
+  dataQualityNotes: [{ type: String }],
   keyRisks: [{ type: String }],
   knowledgeGaps: [{ type: String }],
   bullCase: { type: String },
