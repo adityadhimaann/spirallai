@@ -370,79 +370,30 @@ function renderBullets(text: string, type: "bull" | "bear", setActiveUrl: (url: 
   );
 }
 
-function renderReasoningBullets(text: string | string[], setActiveUrl: (url: string) => void) {
-  let lines = Array.isArray(text)
-    ? text
-    : (text || "")
-        .split(/\r?\n/)
-        .map((l) => l.trim())
-        .filter(Boolean);
-
-  const hasBullets = lines.some((l) => /^[-*•]/.test(l) || /^\d+\./.test(l));
-
-  // Auto-format legacy giant paragraphs into bullet cards by splitting sentences
-  if (!hasBullets && lines.length === 1 && lines[0].length > 150) {
-    const sentences = lines[0].split(/(?<=[.!?])\s+(?=[A-Z])/);
-    if (sentences.length > 1) {
-      lines = sentences;
-    }
-  }
-
-  let intro = "";
-  if (
-    hasBullets &&
-    lines.length > 0 &&
-    !/^[-*•]?\s*\*\*/.test(lines[0]) &&
-    !/^[-*•]/.test(lines[0]) &&
-    !/^\d+\./.test(lines[0])
-  ) {
-    intro = lines.shift() || "";
-  }
-
+function renderComprehensiveReport(text: string | string[], setActiveUrl: (url: string) => void) {
+  const content = Array.isArray(text) ? text.join("\n\n") : (text || "");
+  
   return (
-    <div className="flex flex-col gap-4">
-      {intro && (
-        <div className="mb-2 text-[15px] leading-relaxed text-foreground/90 font-light">
-          {intro}
-        </div>
-      )}
-      {lines.map((line, i) => {
-        const clean = line.replace(/^[-*•]\s*/, "").replace(/^\d+\.\s*/, "");
-        const delay = i * 0.1;
-
-        return (
-          <div
-            key={i}
-            className="group flex items-start gap-4 rounded-2xl border border-white/5 bg-card/20 p-5 transition-all hover:bg-card/40 hover:border-white/10 animate-pop-left opacity-0 shadow-sm hover:shadow-md"
-            style={{ animationDelay: `${delay}s` }}
-          >
-            <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary shadow-[0_0_10px_rgba(var(--primary),0.2)]">
-              <Check className="h-3.5 w-3.5" />
-            </div>
-            <div className="flex-1 text-[14.5px] leading-relaxed text-foreground/90 prose prose-sm dark:prose-invert max-w-none break-words prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-p:my-0">
-              <ReactMarkdown
-                components={{
-                  a: ({ node, ...props }) => (
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setActiveUrl(props.href || "");
-                      }}
-                      className="inline-flex items-center gap-1 font-semibold text-primary hover:underline bg-primary/10 px-1.5 py-0.5 rounded ml-1 my-0.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-full cursor-pointer"
-                      title={props.href}
-                    >
-                      <span className="truncate">{props.children}</span>
-                      <ExternalLink className="w-3 h-3 shrink-0" />
-                    </button>
-                  ),
-                }}
-              >
-                {clean}
-              </ReactMarkdown>
-            </div>
-          </div>
-        );
-      })}
+    <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-table:border-collapse prose-th:border-b prose-th:border-white/10 prose-th:pb-2 prose-td:py-2 prose-p:leading-relaxed prose-li:leading-relaxed">
+      <ReactMarkdown
+        components={{
+          a: ({ node, ...props }) => (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveUrl(props.href || "");
+              }}
+              className="inline-flex items-center gap-1 font-semibold text-primary hover:underline bg-primary/10 px-1.5 py-0.5 rounded mx-1 whitespace-nowrap overflow-hidden text-ellipsis max-w-full cursor-pointer align-baseline"
+              title={props.href}
+            >
+              <span className="truncate">{props.children}</span>
+              <ExternalLink className="w-3 h-3 shrink-0" />
+            </button>
+          ),
+        }}
+      >
+        {content}
+      </ReactMarkdown>
     </div>
   );
 }
@@ -888,13 +839,9 @@ export function ResultsView({ result, onReset, companyName, ticker, onFollowUpCl
         {result.financialHealth && <FinancialHealthTable data={result.financialHealth} />}
       </div>
 
-      <div className="mt-8 relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-card/40 to-card/10 backdrop-blur-2xl p-8 shadow-[0_10px_40px_rgb(0,0,0,0.2)]">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(var(--primary),0.05)_0%,transparent_70%)]" />
-        <div className="absolute top-8 left-8 text-6xl text-primary/10 font-serif leading-none italic select-none">
-          "
-        </div>
+      <div className="mt-8 relative overflow-hidden rounded-3xl border border-white/10 bg-card/20 backdrop-blur-2xl p-8 lg:p-10 shadow-[0_8px_32px_rgb(0,0,0,0.1)]">
         <div className="relative z-10">
-          {renderReasoningBullets(result.reasoning, setActiveUrl)}
+          {renderComprehensiveReport(result.reasoning, setActiveUrl)}
         </div>
       </div>
 

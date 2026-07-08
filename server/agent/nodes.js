@@ -241,7 +241,7 @@ Respond ONLY as strict JSON, no markdown fences, matching this shape exactly:
   "verdict": "STRONG BUY" | "BUY" | "HOLD" | "REDUCE" | "SELL",
   "confidence": <integer 0-100>,
   "confidenceExplanation": "<1-2 sentences explaining why this confidence score was assigned, referencing the weighted factors>",
-  "reasoning": "<Provide 3-5 EXTREMELY SHORT, punchy bullet points (maximum 1-2 sentences per point). Format as a markdown list. Each point MUST contain hard facts/numbers and include an inline citation: [Source Name](url). No fluff. No long explanations. Be ruthless and concise.>",
+  "reasoning": "<Provide a comprehensive institutional-quality Markdown report with sections: 1. Snapshot, 2. Recent Financial Performance, 3. Valuation Context, 4. Competitive Landscape & Market Share, 5. Key Risks. Use inline citations [Source Name](URL) for every claim. Structure it beautifully as a coherent narrative, exactly like the Claude example provided.>",
   "scoreBreakdown": {
     "growth": <integer 1-10>,
     "profitability": <integer 1-10>,
