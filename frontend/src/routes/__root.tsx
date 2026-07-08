@@ -77,13 +77,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "SPIRAL" },
+      { title: "SPIRALLAI" },
       {
         name: "description",
         content:
           "Autonomous multi-agent equity research: financials, news, and competitive analysis synthesized into an Invest / Pass / Watch verdict.",
       },
-      { property: "og:title", content: "SPIRAL" },
+      { property: "og:title", content: "SPIRALLAI" },
       {
         property: "og:description",
         content:

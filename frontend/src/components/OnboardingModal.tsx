@@ -98,7 +98,7 @@ export function OnboardingModal({ onComplete }: Props) {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                 >
-                  <h2 className="mb-2 text-3xl font-semibold tracking-tight">Welcome to Spiral</h2>
+                  <h2 className="mb-2 text-3xl font-semibold tracking-tight">Welcome to Spirallai</h2>
                   <p className="mb-8 text-muted-foreground">
                     Before we begin researching, what should we call you?
                   </p>
