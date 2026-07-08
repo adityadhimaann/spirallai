@@ -102,7 +102,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:8081";
+  const backendUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "https://spiral-backend-3z14.onrender.com" : "http://localhost:8081");
 
   // Sessions
   const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -168,7 +168,7 @@ function Index() {
 
   // Load sessions from API on mount
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8081"}/api/sessions`)
+    fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "https://spiral-backend-3z14.onrender.com" : "http://localhost:8081")}/api/sessions`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setSessions(data);
@@ -185,7 +185,7 @@ function Index() {
         setResearchQuery({ company: s.company, ticker: s.ticker || "", isDeepMode: s.isDeepMode });
 
         const fetchCached = async () => {
-          const cachedResponse = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8081"}/api/results/${encodeURIComponent(s.company)}`);
+          const cachedResponse = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "https://spiral-backend-3z14.onrender.com" : "http://localhost:8081")}/api/results/${encodeURIComponent(s.company)}`);
           if (cachedResponse.ok) {
             const cached = await cachedResponse.json();
             if (cached && cached.verdict) {
@@ -211,7 +211,7 @@ function Index() {
       newSessions.unshift(session);
     }
     setSessions(newSessions);
-    fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8081"}/api/sessions`, {
+    fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "https://spiral-backend-3z14.onrender.com" : "http://localhost:8081")}/api/sessions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(session),
@@ -276,7 +276,7 @@ function Index() {
       let context = {};
       try {
         const cachedResponse = await fetch(
-          `${import.meta.env.VITE_API_URL || "http://localhost:8081"}/api/results/${encodeURIComponent(researchQuery?.company || prompt)}`,
+          `${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "https://spiral-backend-3z14.onrender.com" : "http://localhost:8081")}/api/results/${encodeURIComponent(researchQuery?.company || prompt)}`,
         );
         if (cachedResponse.ok) {
           const cached = await cachedResponse.json();
@@ -341,7 +341,7 @@ function Index() {
         const s = sessions.find((x) => x.id === activeSessionId);
         if (s?.company) {
           try {
-            const cachedResponse = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8081"}/api/results/${encodeURIComponent(s.company)}`);
+            const cachedResponse = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "https://spiral-backend-3z14.onrender.com" : "http://localhost:8081")}/api/results/${encodeURIComponent(s.company)}`);
             if (cachedResponse.ok) {
               const cached = await cachedResponse.json();
               if (cached && cached.verdict) {
