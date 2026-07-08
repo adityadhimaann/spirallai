@@ -48,7 +48,7 @@ function ConfidenceGauge({ value, explanation }: { value: number; explanation?: 
           <span className="text-sm text-muted-foreground">/100</span>
         </span>
       </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-secondary dark:bg-white/10 shadow-inner">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-secondary dark:bg-white/30 shadow-inner">
         <div
           className="h-full rounded-full bg-primary transition-all duration-700"
           style={{ width: `${v}%` }}
@@ -97,7 +97,7 @@ function VerdictScorecard({ scores }: { scores: ScoreBreakdown }) {
             <div key={key} className="flex items-center gap-3">
               <span className="text-sm w-5 text-center">{icon}</span>
               <span className="text-xs font-medium text-foreground w-36 truncate">{label}</span>
-              <div className="flex-1 h-2 overflow-hidden rounded-full bg-secondary/50 dark:bg-white/10 shadow-inner">
+              <div className="flex-1 h-2 overflow-hidden rounded-full bg-secondary/50 dark:bg-white/30 shadow-inner">
                 {!isNull && (
                   <div
                     className={`h-full rounded-full ${color} transition-all duration-700`}
