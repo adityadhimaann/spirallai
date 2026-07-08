@@ -94,7 +94,7 @@ function ChatActions({ content }: { content: string }) {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "SPIRALLAI" },
+      { title: "SPIRALL" },
       { name: "description", content: "Autonomous multi-agent equity research." },
     ],
   }),
@@ -434,7 +434,7 @@ function Index() {
                 className="font-light italic tracking-[0.15em] text-primary cursor-pointer lowercase"
                 onClick={handleReset}
               >
-                spirallai
+                spirall
               </span>
             </div>
           </div>
@@ -446,7 +446,7 @@ function Index() {
             <div className="mb-6 flex items-center gap-4">
               <SpiralIcon className="h-10 w-10 text-primary" />
               <span className="text-4xl font-light italic tracking-[0.25em] text-primary lowercase drop-shadow-[0_0_15px_rgba(var(--primary),0.3)]">
-                spirallai
+                spirall
               </span>
             </div>
             <div className="mb-4 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">

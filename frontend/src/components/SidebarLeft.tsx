@@ -54,7 +54,7 @@ export function SidebarLeft({ sessions, activeSessionId, onSelectSession, onNewC
             </svg>
           </div>
           <span className="font-light italic tracking-[0.15em] text-foreground lowercase opacity-0 transition-opacity duration-300 group-hover:opacity-100 whitespace-nowrap">
-            SPIRALLAI
+            SPIRALL
           </span>
         </div>
       </div>
