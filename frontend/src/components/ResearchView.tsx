@@ -151,6 +151,17 @@ export function ResearchView({
 
     es.addEventListener("node_update", handleNodeUpdate as EventListener);
     es.addEventListener("done", handleDone as EventListener);
+
+    es.addEventListener("error", (evt: any) => {
+      try {
+        const data = JSON.parse(evt.data);
+        setError(`Backend Error: ${data.message || "Unknown error"}`);
+      } catch {
+        setError("An error occurred on the backend.");
+      }
+      es.close();
+    });
+
     es.onerror = () => {
       if (es.readyState === EventSource.CLOSED) return;
       setError("Connection to backend lost. Is it running?");
