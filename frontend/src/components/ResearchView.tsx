@@ -50,7 +50,7 @@ export function ResearchView({
   useEffect(() => {
     const fetchCached = async () => {
       try {
-        const cachedResponse = await fetch(`http://localhost:8081/api/results/${encodeURIComponent(companyName)}`);
+        const cachedResponse = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8081"}/api/results/${encodeURIComponent(companyName)}`);
         if (cachedResponse.ok) {
           const cached = await cachedResponse.json();
           if (cached && cached.verdict) {
@@ -134,7 +134,7 @@ export function ResearchView({
           } as ResearchResult;
 
           setResult(finalResult);
-          fetch("http://localhost:8081/api/results", {
+          fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8081"}/api/results`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(finalResult),
