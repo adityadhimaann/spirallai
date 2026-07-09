@@ -1,41 +1,49 @@
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+
 /**
  * Entity Extraction
- * Extracts Company Name, Ticker, and Industry from the query deterministically.
- * Uses a small in-memory lookup table to avoid LLM calls for popular companies.
+ * Uses an LLM to extract Company Name, Ticker, and Industry from the query deterministically.
  */
+export async function extractEntities(query) {
+  try {
+    const model = new ChatGoogleGenerativeAI({
+      model: "gemini-2.5-flash",
+      temperature: 0,
+      maxOutputTokens: 300,
+      maxRetries: 2,
+      apiKey: process.env.GEMINI_API_KEY,
+    });
 
-const TICKER_DB = {
-  "apple": { ticker: "AAPL", industry: "Consumer Electronics" },
-  "nvidia": { ticker: "NVDA", industry: "Semiconductors" },
-  "tesla": { ticker: "TSLA", industry: "Automotive" },
-  "microsoft": { ticker: "MSFT", industry: "Software" },
-  "amazon": { ticker: "AMZN", industry: "E-commerce" },
-  "google": { ticker: "GOOGL", industry: "Internet Services" },
-  "alphabet": { ticker: "GOOGL", industry: "Internet Services" },
-  "meta": { ticker: "META", industry: "Social Media" },
-};
+    const prompt = `Extract the primary company name, its stock ticker symbol (if public), and its industry from the following user query.
+Return ONLY a raw JSON object with no markdown formatting, no markdown code blocks, and no extra text.
+If you cannot find a ticker, use "UNKNOWN".
 
-export function extractEntities(query) {
-  const normalized = query.toLowerCase().trim();
-  
-  // Try to find a known company in the query
-  for (const [company, data] of Object.entries(TICKER_DB)) {
-    if (normalized.includes(company)) {
-      return {
-        companyName: company.charAt(0).toUpperCase() + company.slice(1),
-        ticker: data.ticker,
-        industry: data.industry
-      };
+Query: "${query}"
+
+Format:
+{
+  "companyName": "...",
+  "ticker": "...",
+  "industry": "..."
+}`;
+
+    const res = await model.invoke(prompt);
+    let content = res.content.trim();
+    if (content.startsWith("\`\`\`json")) {
+      content = content.replace(/\`\`\`json/g, "").replace(/\`\`\`/g, "").trim();
+    } else if (content.startsWith("\`\`\`")) {
+      content = content.replace(/\`\`\`/g, "").trim();
     }
+    
+    return JSON.parse(content);
+  } catch (err) {
+    console.error("LLM extraction failed:", err);
+    // Fallback heuristic
+    const name = query.split(' ').slice(0, 2).join(' ').replace(/[^a-zA-Z0-9 ]/g, '');
+    return {
+      companyName: name || query,
+      ticker: "UNKNOWN",
+      industry: "General"
+    };
   }
-
-  // Fallback heuristic: assume the first 1-2 capitalized words might be the company
-  // Or just use the whole query if it's short.
-  // In a real prod app, you'd use a local Trie or sqlite DB of 10k tickers.
-  const name = query.split(' ').slice(0, 2).join(' ').replace(/[^a-zA-Z0-9 ]/g, '');
-  return {
-    companyName: name || query,
-    ticker: "UNKNOWN",
-    industry: "General"
-  };
 }

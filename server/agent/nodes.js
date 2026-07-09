@@ -72,7 +72,7 @@ export async function plannerNode(state) {
   // Use the raw query (initially stored in companyName) to drive the deterministic planner
   const rawQuery = state.companyName;
   
-  const entities = extractEntities(rawQuery);
+  const entities = await extractEntities(rawQuery);
   const intent = determineIntent(rawQuery);
   const queries = expandQueries(entities, intent);
 
