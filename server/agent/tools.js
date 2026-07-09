@@ -12,28 +12,45 @@ export async function fetchFinancials(companyName, ticker) {
   }
   try {
     let finalTicker = ticker;
-    // If the planner's extractor didn't know the ticker, ask Finnhub
-    if (finalTicker === "UNKNOWN") {
+    
+    // Finnhub search throws "q too long" for strings > 15 chars, so we truncate
+    const searchQuery = companyName.length > 15 ? companyName.substring(0, 15) : companyName;
+
+    const doFinnhubSearch = async () => {
       const searchRes = await axios.get("https://finnhub.io/api/v1/search", {
-        params: { q: companyName, token: FINNHUB_KEY },
+        params: { q: searchQuery, token: FINNHUB_KEY },
         timeout: 5000,
       });
-      const bestMatch = searchRes.data?.result?.[0];
-      if (bestMatch && bestMatch.symbol) {
-        finalTicker = bestMatch.symbol;
+      return searchRes.data?.result?.[0]?.symbol;
+    };
+
+    if (finalTicker === "UNKNOWN") {
+      const found = await doFinnhubSearch();
+      if (found) finalTicker = found;
+    }
+
+    let profileRes = await axios.get("https://finnhub.io/api/v1/stock/profile2", {
+      params: { symbol: finalTicker, token: FINNHUB_KEY },
+      timeout: 8000,
+    });
+
+    // If Finnhub doesn't recognize the LLM's ticker (e.g. TCS instead of TCS.NS), fallback to search
+    if (finalTicker !== "UNKNOWN" && !profileRes.data?.ticker) {
+      const found = await doFinnhubSearch();
+      if (found) {
+        finalTicker = found;
+        profileRes = await axios.get("https://finnhub.io/api/v1/stock/profile2", {
+          params: { symbol: finalTicker, token: FINNHUB_KEY },
+          timeout: 8000,
+        });
       }
     }
 
-    const [profileRes, metricRes] = await Promise.all([
-      axios.get("https://finnhub.io/api/v1/stock/profile2", {
-        params: { symbol: finalTicker, token: FINNHUB_KEY },
-        timeout: 8000,
-      }),
-      axios.get("https://finnhub.io/api/v1/stock/metric", {
-        params: { symbol: finalTicker, metric: "all", token: FINNHUB_KEY },
-        timeout: 8000,
-      })
-    ]);
+    const metricRes = await axios.get("https://finnhub.io/api/v1/stock/metric", {
+      params: { symbol: finalTicker, metric: "all", token: FINNHUB_KEY },
+      timeout: 8000,
+    });
+
     const profile = profileRes.data || {};
     const metricData = metricRes.data?.metric || {};
     
