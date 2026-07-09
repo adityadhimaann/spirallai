@@ -169,10 +169,10 @@ export async function fetchCompetitive(companyName, isDeepMode) {
 
 function mockFinancials(companyName, ticker, errNote) {
   return {
-    source: errNote ? `mock (finnhub error: ${errNote})` : "mock (no FINNHUB_API_KEY set)",
+    source: errNote ? `Unavailable (Finnhub API Error or Private Company: ${errNote})` : "Unavailable (No FINNHUB_API_KEY set)",
     isMock: true,
     symbol: ticker || companyName.toUpperCase().slice(0, 4),
-    description: `⚠️ MOCK DATA — These are placeholder fundamentals for ${companyName}. DO NOT use these numbers for analysis, valuation, or any financial conclusions. Set FINNHUB_API_KEY for live data.`,
+    description: `Public financial fundamentals are unavailable for ${companyName}. The company may be privately held, unlisted, or the data source failed.`,
     peRatio: "Not disclosed.",
     marketCap: "Not disclosed.",
     revenueTTM: "Not disclosed.",
@@ -184,20 +184,18 @@ function mockFinancials(companyName, ticker, errNote) {
 
 function mockNews(companyName, errNote) {
   return {
-    source: errNote ? `mock (tavily error: ${errNote})` : "mock (no TAVILY_API_KEY set)",
+    source: errNote ? `Unavailable (Tavily Search API Error: ${errNote})` : "Unavailable (No TAVILY_API_KEY set)",
     articles: [
-      { title: `${companyName} reports steady quarterly growth`, url: "", snippet: "Mock headline — set TAVILY_API_KEY for live results." },
-      { title: `${companyName} faces margin pressure from input costs`, url: "", snippet: "Mock headline — set TAVILY_API_KEY for live results." },
-      { title: `Analysts split on ${companyName} outlook for next fiscal year`, url: "", snippet: "Mock headline — set TAVILY_API_KEY for live results." },
+      { title: `No recent news articles could be retrieved for ${companyName}`, url: "", snippet: "Search failed or API unavailable." }
     ],
   };
 }
 
 function mockCompetitive(companyName, errNote) {
   return {
-    source: errNote ? `mock (tavily error: ${errNote})` : "mock (no TAVILY_API_KEY set)",
+    source: errNote ? `Unavailable (Tavily Search API Error: ${errNote})` : "Unavailable (No TAVILY_API_KEY set)",
     findings: [
-      { title: `${companyName} competitive positioning overview`, url: "", snippet: "Mock finding — set TAVILY_API_KEY for live results." },
+      { title: `No competitive landscape data could be retrieved for ${companyName}`, url: "", snippet: "Search failed or API unavailable." },
     ],
   };
 }
