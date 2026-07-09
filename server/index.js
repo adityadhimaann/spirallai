@@ -1,4 +1,5 @@
 import "dotenv/config";
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Bypass local antivirus/proxy self-signed cert interception
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
