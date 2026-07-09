@@ -99,6 +99,18 @@ app.get("/api/sessions", async (req, res) => {
   }
 });
 
+// DELETE /api/sessions/:id
+app.delete("/api/sessions/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await ChatSession.deleteOne({ id });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/sessions (Upsert session)
 app.post("/api/sessions", async (req, res) => {
   try {

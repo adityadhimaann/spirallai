@@ -218,6 +218,28 @@ function Index() {
     }).catch(console.error);
   };
 
+  const handleDeleteSession = async (id: string) => {
+    // 1. Remove locally
+    setSessions(prev => prev.filter(s => s.id !== id));
+    
+    // 2. If it was active, reset view
+    if (activeSessionId === id) {
+      setActiveSessionId(null);
+      setMessages([]);
+      setResearchQuery(null);
+      setActiveResult(null);
+    }
+
+    // 3. Delete on backend
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "https://spiral-backend-3z14.onrender.com" : "http://localhost:8081")}/api/sessions/${id}`, {
+        method: "DELETE",
+      });
+    } catch (err) {
+      console.error("Failed to delete session:", err);
+    }
+  };
+
   const updateActiveSessionMessages = (newMessages: Message[]) => {
     setMessages(newMessages);
     if (activeSessionId) {
@@ -423,6 +445,7 @@ function Index() {
           setIsResearching(false);
         }}
         onNewChat={handleReset}
+        onDeleteSession={handleDeleteSession}
       />
 
       <div className="flex-1 flex flex-col min-w-0 relative z-10">

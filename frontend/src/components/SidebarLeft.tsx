@@ -7,9 +7,17 @@ interface Props {
   activeSessionId: string | null;
   onSelectSession: (id: string) => void;
   onNewChat: () => void;
+  onDeleteSession: (id: string) => void;
 }
 
-export function SidebarLeft({ sessions, activeSessionId, onSelectSession, onNewChat }: Props) {
+export function SidebarLeft({
+  sessions,
+  activeSessionId,
+  onSelectSession,
+  onNewChat,
+  onDeleteSession,
+}: Props) {
+  const [searchQuery, setSearchQuery] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== "undefined") {
       return (
@@ -85,40 +93,85 @@ export function SidebarLeft({ sessions, activeSessionId, onSelectSession, onNewC
           </div>
         </div>
 
+        <div className="px-3 mb-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search history..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-8 pl-8 pr-3 text-xs rounded-md bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+            />
+          </div>
+        </div>
+
         <div className="flex flex-col gap-1 px-2">
           {sessions.length === 0 ? (
             <div className="px-4 py-4 text-xs text-muted-foreground opacity-0 transition-opacity duration-300 group-hover:opacity-100 whitespace-nowrap">
-              No recent searches
+              No recent searches found
             </div>
           ) : (
-            sessions.map((session) => (
-              <button
-                key={session.id}
-                onClick={() => onSelectSession(session.id)}
-                className={`group/btn relative flex h-11 w-full items-center gap-3 overflow-hidden rounded-lg px-3 transition-colors cursor-pointer ${
-                  activeSessionId === session.id
-                    ? "bg-secondary text-secondary-foreground"
-                    : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-                }`}
-              >
-                <div className="absolute left-[16px] flex items-center justify-center h-5 w-5 bg-secondary/50 rounded overflow-hidden">
-                  <img
-                    src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${session.company.toLowerCase().replace(/[^a-z0-9]/g, "") + ".com"}&size=32`}
-                    alt=""
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
-                  />
-                </div>
+            sessions
+              .filter((session) =>
+                session.company.toLowerCase().includes(searchQuery.toLowerCase()),
+              )
+              .map((session) => (
+                <div key={session.id} className="relative group/session w-full">
+                  <button
+                    onClick={() => onSelectSession(session.id)}
+                    className={`group/btn relative flex h-11 w-full items-center gap-3 overflow-hidden rounded-lg px-3 transition-colors cursor-pointer ${
+                      activeSessionId === session.id
+                        ? "bg-secondary text-secondary-foreground"
+                        : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                    }`}
+                  >
+                    <div className="absolute left-[16px] flex items-center justify-center h-5 w-5 bg-secondary/50 rounded overflow-hidden">
+                      <img
+                        src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${session.company.toLowerCase().replace(/[^a-z0-9]/g, "") + ".com"}&size=32`}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    </div>
 
-                <div className="ml-8 flex flex-col items-start opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                  <span className="truncate w-40 text-sm font-medium text-left">
-                    {session.company}
-                  </span>
+                    <div className="ml-8 flex flex-col items-start opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                      <span className="truncate w-40 text-sm font-medium text-left">
+                        {session.company}
+                      </span>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteSession(session.id);
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover/session:opacity-100 transition-all cursor-pointer z-10 hidden group-hover:block"
+                    title="Delete session"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M3 6h18" />
+                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                      <line x1="10" y1="11" x2="10" y2="17" />
+                      <line x1="14" y1="11" x2="14" y2="17" />
+                    </svg>
+                  </button>
                 </div>
-              </button>
-            ))
+              ))
           )}
         </div>
       </div>
