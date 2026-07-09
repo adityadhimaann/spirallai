@@ -10,7 +10,7 @@ export async function extractEntities(query) {
       model: "gemini-2.5-flash",
       temperature: 0,
       maxOutputTokens: 300,
-      maxRetries: 2,
+      maxRetries: 5,
       apiKey: process.env.GEMINI_API_KEY,
     });
 
