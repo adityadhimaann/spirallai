@@ -410,7 +410,7 @@ function renderComprehensiveReport(text: string | string[], setActiveUrl: (url: 
                   ),
                 }}
               >
-                {block.trim()}
+                {block.trim().replace(/\\\[/g, '[').replace(/\\\]/g, ']').replace(/\\\(/g, '(').replace(/\\\)/g, ')').replace(/\]\s+\(/g, '](')}
               </ReactMarkdown>
             </div>
           </div>

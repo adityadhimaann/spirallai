@@ -242,7 +242,7 @@ Respond ONLY as strict JSON, no markdown fences, matching this shape exactly:
   "verdict": "STRONG BUY" | "BUY" | "HOLD" | "REDUCE" | "SELL",
   "confidence": <integer 0-100>,
   "confidenceExplanation": "<1-2 sentences explaining why this confidence score was assigned, referencing the weighted factors>",
-  "reasoning": "<Provide a comprehensive institutional-quality Markdown report with sections: 1. Snapshot, 2. Recent Financial Performance, 3. Valuation Context, 4. Competitive Landscape & Market Share, 5. Key Risks. Use inline citations [Source Name](URL) for every claim. Structure it beautifully as a coherent narrative, exactly like the Claude example provided.>",
+  "reasoning": "<Provide a comprehensive institutional-quality Markdown report with sections: 1. Snapshot, 2. Recent Financial Performance, 3. Valuation Context, 4. Competitive Landscape & Market Share, 5. Key Risks. Use inline citations [Source Name](URL) for every claim. Structure it beautifully as a coherent narrative, exactly like the Claude example provided. IMPORTANT: DO NOT escape brackets or parentheses with backslashes. Output valid Markdown links like [Source](URL).>",
   "scoreBreakdown": {
     "growth": <integer 1-10>,
     "profitability": <integer 1-10>,
