@@ -237,7 +237,8 @@ ${state.bearCase}
 FINANCIALS DATA:
 ${JSON.stringify(state.financials)}
 
-Respond ONLY as strict JSON, no markdown fences, matching this shape exactly:
+Respond ONLY as strict JSON, no markdown fences, matching this shape exactly.
+IMPORTANT: The JSON must be strictly valid. Do NOT output raw physical newlines inside the "reasoning" string or any other string. You MUST use the literal characters \n to represent newlines within strings.
 {
   "verdict": "STRONG BUY" | "BUY" | "HOLD" | "REDUCE" | "SELL",
   "confidence": <integer 0-100>,
@@ -277,16 +278,16 @@ Respond ONLY as strict JSON, no markdown fences, matching this shape exactly:
   let parsed;
   try {
     let cleaned = res.content.trim();
-    const match = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/i);
-    if (match) {
-      cleaned = match[1].trim();
-    } else {
-      const start = cleaned.indexOf('{');
-      const end = cleaned.lastIndexOf('}');
-      if (start !== -1 && end !== -1) {
-        cleaned = cleaned.substring(start, end + 1);
-      }
+    const start = cleaned.indexOf('{');
+    const end = cleaned.lastIndexOf('}');
+    if (start !== -1 && end !== -1) {
+      cleaned = cleaned.substring(start, end + 1);
     }
+    
+    // Safely escape any physical newlines inside JSON string values
+    cleaned = cleaned.replace(/"([^"\\]*(?:\\.[^"\\]*)*)"/g, (match) => {
+      return match.replace(/\n/g, "\\n");
+    });
     parsed = JSON.parse(cleaned);
     // Ensure reasoning is always a string
     if (Array.isArray(parsed.reasoning)) {
