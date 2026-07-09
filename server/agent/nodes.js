@@ -14,7 +14,7 @@ const SYSTEM_PROMPT_CORE = `You are a senior equity research analyst at a top in
 
 ## Core Principles
 * Never mix mock, cached, estimated, or placeholder financial data with verified live financial data.
-* If the FINANCIALS data contains "isMock": true, explicitly state: "Financial fundamentals data was unavailable (mock/placeholder). All analysis below relies solely on news and competitive research sources." Do NOT invent, estimate, or use the mock numbers for any calculation.
+* If the FINANCIALS data contains "isMock": true, explicitly state: "Financial fundamentals data was unavailable for this company. All analysis below relies solely on news and competitive research sources." Do NOT invent, estimate, or use the mock numbers for any calculation.
 * Always prioritize official company sources in this order:
   1. SEC Filings (10-K, 10-Q, 8-K)
   2. Company Investor Relations
@@ -127,7 +127,7 @@ BULL CASE CRITERIA — include when available and supported by evidence:
 IMPORTANT:
 - Do NOT use Reddit, Medium, or blogs as factual evidence.
 - Do NOT cite broad market share stats (e.g., CSIMarket) as the company's share.
-- If financial data is marked as mock/placeholder, acknowledge it and focus on news-driven analysis only.
+- If financial data is unavailable (isMock), acknowledge it and focus on news-driven analysis only.
 
 FINANCIALS: ${JSON.stringify(state.financials)}
 NEWS: ${JSON.stringify(state.news)}
@@ -164,7 +164,7 @@ BEAR CASE CRITERIA — include when supported by evidence:
 IMPORTANT:
 - Do NOT use Reddit, Medium, or blogs as factual evidence.
 - Do NOT cite broad market share stats as the company's actual share.
-- If financial data is marked as mock/placeholder, acknowledge it and focus on risk analysis from news sources only.
+- If financial data is unavailable (isMock), acknowledge it and focus on risk analysis from news sources only.
 
 FINANCIALS: ${JSON.stringify(state.financials)}
 NEWS: ${JSON.stringify(state.news)}
@@ -212,7 +212,7 @@ For each metric: use the exact verified value, or "Not disclosed." if unavailabl
 
 # Data Quality Notes
 Generate an array of warning strings for any of these conditions:
-- Mock/placeholder financial data was used (isMock: true)
+- Financial data was unavailable (isMock: true)
 - Conflicting data between sources
 - Reddit or blogs used as factual evidence (flag and correct)
 - Broad market share stats used as company market share (flag and correct)
