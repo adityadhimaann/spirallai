@@ -11,13 +11,26 @@ export async function fetchFinancials(companyName, ticker) {
     return mockFinancials(companyName, ticker);
   }
   try {
+    let finalTicker = ticker;
+    // If the planner's extractor didn't know the ticker, ask Finnhub
+    if (finalTicker === "UNKNOWN") {
+      const searchRes = await axios.get("https://finnhub.io/api/v1/search", {
+        params: { q: companyName, token: FINNHUB_KEY },
+        timeout: 5000,
+      });
+      const bestMatch = searchRes.data?.result?.[0];
+      if (bestMatch && bestMatch.symbol) {
+        finalTicker = bestMatch.symbol;
+      }
+    }
+
     const [profileRes, metricRes] = await Promise.all([
       axios.get("https://finnhub.io/api/v1/stock/profile2", {
-        params: { symbol: ticker, token: FINNHUB_KEY },
+        params: { symbol: finalTicker, token: FINNHUB_KEY },
         timeout: 8000,
       }),
       axios.get("https://finnhub.io/api/v1/stock/metric", {
-        params: { symbol: ticker, metric: "all", token: FINNHUB_KEY },
+        params: { symbol: finalTicker, metric: "all", token: FINNHUB_KEY },
         timeout: 8000,
       })
     ]);
