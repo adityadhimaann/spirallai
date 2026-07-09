@@ -1,4 +1,5 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { jsonrepair } from "jsonrepair";
 import { fetchFinancials, fetchNews, fetchCompetitive } from "./tools.js";
 
 const model = new ChatGoogleGenerativeAI({
@@ -284,10 +285,13 @@ IMPORTANT: The JSON must be strictly valid. Do NOT output raw physical newlines 
       cleaned = cleaned.substring(start, end + 1);
     }
     
-    // Safely escape any physical newlines inside JSON string values
-    cleaned = cleaned.replace(/"([^"\\]*(?:\\.[^"\\]*)*)"/g, (match) => {
-      return match.replace(/\n/g, "\\n");
-    });
+    // Use jsonrepair to fix unescaped newlines, unescaped quotes, trailing commas, etc.
+    try {
+      cleaned = jsonrepair(cleaned);
+    } catch (e) {
+      console.warn("jsonrepair could not fix the JSON:", e.message);
+    }
+
     parsed = JSON.parse(cleaned);
     // Ensure reasoning is always a string
     if (Array.isArray(parsed.reasoning)) {
@@ -309,6 +313,8 @@ IMPORTANT: The JSON must be strictly valid. Do NOT output raw physical newlines 
       parsed.dataQualityNotes = [];
     }
   } catch (err) {
+    console.error("Judge JSON Parse Error:", err.message);
+    console.error("Failing JSON String:", cleaned);
     parsed = {
       verdict: "WATCH",
       confidence: 50,
