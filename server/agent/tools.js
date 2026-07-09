@@ -1,58 +1,68 @@
 import axios from "axios";
 
 /**
- * Fetches company fundamentals from Alpha Vantage (OVERVIEW endpoint).
+ * Fetches company fundamentals from Finnhub (profile2 and metric endpoints).
  * Falls back to a clearly-labeled mock so the pipeline still runs
  * end-to-end without a paid/rate-limited key during a demo.
  */
 export async function fetchFinancials(companyName, ticker) {
-  const AV_KEY = process.env.ALPHAVANTAGE_API_KEY;
-  if (!AV_KEY) {
+  const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
+  if (!FINNHUB_KEY) {
     return mockFinancials(companyName, ticker);
   }
   try {
-    const { data } = await axios.get("https://www.alphavantage.co/query", {
-      params: { function: "OVERVIEW", symbol: ticker, apikey: AV_KEY },
-      timeout: 8000,
-    });
-    if (!data || !data.Symbol) return mockFinancials(companyName, ticker);
+    const [profileRes, metricRes] = await Promise.all([
+      axios.get("https://finnhub.io/api/v1/stock/profile2", {
+        params: { symbol: ticker, token: FINNHUB_KEY },
+        timeout: 8000,
+      }),
+      axios.get("https://finnhub.io/api/v1/stock/metric", {
+        params: { symbol: ticker, metric: "all", token: FINNHUB_KEY },
+        timeout: 8000,
+      })
+    ]);
+    const profile = profileRes.data || {};
+    const metricData = metricRes.data?.metric || {};
+    
+    if (!profile.ticker) return mockFinancials(companyName, ticker);
+    
     return {
-      source: "alphavantage",
+      source: "finnhub",
       isMock: false,
-      symbol: data.Symbol,
-      name: data.Name || companyName,
-      sector: data.Sector,
-      industry: data.Industry,
-      description: data.Description,
+      symbol: profile.ticker,
+      name: profile.name || companyName,
+      sector: profile.finnhubIndustry,
+      industry: profile.finnhubIndustry,
+      description: "Financials retrieved from Finnhub.",
       // Core financials
-      marketCap: data.MarketCapitalization || "Not disclosed.",
-      enterpriseValue: data.EVToRevenue ? "Derived" : "Not disclosed.",
-      revenueTTM: data.RevenueTTM || "Not disclosed.",
-      grossProfitTTM: data.GrossProfitTTM || "Not disclosed.",
-      ebitda: data.EBITDA || "Not disclosed.",
-      peRatio: data.PERatio || "Not disclosed.",
-      forwardPE: data.ForwardPE || "Not disclosed.",
-      pegRatio: data.PEGRatio || "Not disclosed.",
-      profitMargin: data.ProfitMargin || "Not disclosed.",
-      operatingMarginTTM: data.OperatingMarginTTM || "Not disclosed.",
-      eps: data.EPS || "Not disclosed.",
-      quarterlyEarningsGrowthYOY: data.QuarterlyEarningsGrowthYOY || "Not disclosed.",
-      quarterlyRevenueGrowthYOY: data.QuarterlyRevenueGrowthYOY || "Not disclosed.",
+      marketCap: profile.marketCapitalization ? (profile.marketCapitalization * 1000000) : "Not disclosed.",
+      enterpriseValue: "Not disclosed.",
+      revenueTTM: "Not disclosed.",
+      grossProfitTTM: "Not disclosed.",
+      ebitda: "Not disclosed.",
+      peRatio: metricData.peExclExtraTTM || metricData.peExclExtraAnnual || "Not disclosed.",
+      forwardPE: "Not disclosed.",
+      pegRatio: "Not disclosed.",
+      profitMargin: metricData.netProfitMarginTTM ? metricData.netProfitMarginTTM + "%" : "Not disclosed.",
+      operatingMarginTTM: metricData.operatingMarginTTM ? metricData.operatingMarginTTM + "%" : "Not disclosed.",
+      eps: metricData.epsTTM || "Not disclosed.",
+      quarterlyEarningsGrowthYOY: metricData.epsGrowthTTMYoy ? metricData.epsGrowthTTMYoy + "%" : "Not disclosed.",
+      quarterlyRevenueGrowthYOY: metricData.revenueGrowthTTMYoy ? metricData.revenueGrowthTTMYoy + "%" : "Not disclosed.",
       // Balance sheet
-      bookValue: data.BookValue || "Not disclosed.",
-      debtToEquity: data.DebtToEquity ?? "Not disclosed.",
+      bookValue: metricData.bookValuePerShareAnnual || "Not disclosed.",
+      debtToEquity: metricData["totalDebt/totalEquityAnnual"] || "Not disclosed.",
       // Shares & ownership
-      sharesOutstanding: data.SharesOutstanding || "Not disclosed.",
-      beta: data.Beta || "Not disclosed.",
-      dividendYield: data.DividendYield || "Not disclosed.",
+      sharesOutstanding: profile.shareOutstanding ? (profile.shareOutstanding * 1000000) : "Not disclosed.",
+      beta: metricData.beta || "Not disclosed.",
+      dividendYield: metricData.dividendYieldIndicatedAnnual ? metricData.dividendYieldIndicatedAnnual + "%" : "Not disclosed.",
       // Targets
-      analystTargetPrice: data.AnalystTargetPrice || "Not disclosed.",
-      analystRatingStrongBuy: data.AnalystRatingStrongBuy || "Not disclosed.",
-      analystRatingBuy: data.AnalystRatingBuy || "Not disclosed.",
-      analystRatingHold: data.AnalystRatingHold || "Not disclosed.",
-      analystRatingSell: data.AnalystRatingSell || "Not disclosed.",
-      week52High: data["52WeekHigh"] || "Not disclosed.",
-      week52Low: data["52WeekLow"] || "Not disclosed.",
+      analystTargetPrice: "Not disclosed.",
+      analystRatingStrongBuy: "Not disclosed.",
+      analystRatingBuy: "Not disclosed.",
+      analystRatingHold: "Not disclosed.",
+      analystRatingSell: "Not disclosed.",
+      week52High: metricData["52WeekHigh"] || "Not disclosed.",
+      week52Low: metricData["52WeekLow"] || "Not disclosed.",
     };
   } catch (err) {
     return mockFinancials(companyName, ticker, err.message);
@@ -129,10 +139,10 @@ export async function fetchCompetitive(companyName, isDeepMode) {
 
 function mockFinancials(companyName, ticker, errNote) {
   return {
-    source: errNote ? `mock (alphavantage error: ${errNote})` : "mock (no ALPHAVANTAGE_API_KEY set)",
+    source: errNote ? `mock (finnhub error: ${errNote})` : "mock (no FINNHUB_API_KEY set)",
     isMock: true,
     symbol: ticker || companyName.toUpperCase().slice(0, 4),
-    description: `⚠️ MOCK DATA — These are placeholder fundamentals for ${companyName}. DO NOT use these numbers for analysis, valuation, or any financial conclusions. Set ALPHAVANTAGE_API_KEY for live data.`,
+    description: `⚠️ MOCK DATA — These are placeholder fundamentals for ${companyName}. DO NOT use these numbers for analysis, valuation, or any financial conclusions. Set FINNHUB_API_KEY for live data.`,
     peRatio: "Not disclosed.",
     marketCap: "Not disclosed.",
     revenueTTM: "Not disclosed.",

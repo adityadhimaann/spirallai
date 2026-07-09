@@ -37,7 +37,7 @@ Env vars:
 | Key | Required | Notes |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | Yes | Powers the bull/bear/judge reasoning nodes |
-| `ALPHAVANTAGE_API_KEY` | No | Free tier at alphavantage.co. Without it, financials fall back to a clearly-labeled mock so the pipeline still runs end-to-end |
+| `FINNHUB_API_KEY` | No | Free tier at finnhub.io. Without it, financials fall back to a clearly-labeled mock so the pipeline still runs end-to-end |
 | `TAVILY_API_KEY` | No | Free tier at tavily.com. Without it, news/competitive data fall back to mock headlines |
 
 **Endpoints**

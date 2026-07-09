@@ -160,7 +160,7 @@ function FinancialHealthTable({ data }: { data: FinancialHealth }) {
       </div>
       {!hasData && (
         <p className="mt-4 text-xs text-muted-foreground italic text-center">
-          No verified financial data available. Set ALPHAVANTAGE_API_KEY for live data.
+          No verified financial data available. Set FINNHUB_API_KEY for live data.
         </p>
       )}
     </div>
